@@ -12,7 +12,7 @@
 #endif
 
 void libblake_encode_hex(const void *data, size_t n, char out[/* static n * 2 + 1 */], int uppercase);
-size_t libblake_decode_hex(const char *data, size_t n, void *out);
+size_t libblake_decode_hex(const char *data, size_t n, void *out, int *validp);
 
 #define LIBBLAKE_BLAKE224_OUTPUT_SIZE (224 / 8)
 #define LIBBLAKE_BLAKE256_OUTPUT_SIZE (256 / 8)

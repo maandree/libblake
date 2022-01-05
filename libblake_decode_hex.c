@@ -2,19 +2,24 @@
 #include "common.h"
 
 size_t
-libblake_decode_hex(const char *data, size_t n, void *out_)
+libblake_decode_hex(const char *data, size_t n, void *out_, int *validp)
 {
 	unsigned char *out = out_, value;
 	size_t i, j = 0;
 	int odd = 0;
+
+	*validp = 1;
 
 	if (!out) {
 		for (i = 0; i < n && data[i]; i++) {
 			if (isxdigit(data[i])) {
 				j += (size_t)odd;
 				odd ^= 1;
+			} else if (isgraph(data[i])) {
+				*validp = 0;
 			}
 		}
+		*validp &= !odd;
 		return j;
 	}
 
@@ -28,8 +33,11 @@ libblake_decode_hex(const char *data, size_t n, void *out_)
 				out[j++] |= value;
 				odd = 0;
 			}
+		} else if (isgraph(data[i])) {
+			*validp = 0;
 		}
 	}
 
+	*validp &= !odd;
 	return j;
 }

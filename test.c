@@ -15,6 +15,7 @@ check_hex(int uppercase, const char *hex, const unsigned char *bin, size_t n)
 {
 	unsigned char buf_bin[512];
 	char buf_hex[1025];
+	int valid = 0;
 	memset(buf_bin, 0, sizeof(buf_bin));
 	memset(buf_hex, 0, sizeof(buf_hex));
 	buf_hex[2 * n] = 1;
@@ -23,8 +24,8 @@ check_hex(int uppercase, const char *hex, const unsigned char *bin, size_t n)
 		fprintf(stderr, "libblake_encode_hex with uppercase=%i failed\n", uppercase);
 		exit(1);
 	}
-	if (libblake_decode_hex(hex, SIZE_MAX, NULL) != n ||
-	    libblake_decode_hex(hex, SIZE_MAX, buf_bin) != n ||
+	if (libblake_decode_hex(hex, SIZE_MAX, NULL, &valid) != n || !valid ||
+	    libblake_decode_hex(hex, SIZE_MAX, buf_bin, &valid) != n || !valid ||
 	    memcmp(buf_bin, bin, n)) {
 		fprintf(stderr, "libblake_decode_hex failed\n");
 		exit(1);
@@ -76,7 +77,7 @@ digest_blake1(int length, const void *msg, size_t msglen, size_t bits)
 
 #if 0
 # define CHECK_BLAKE1_HEX(LENGTH, MSG, EXPECTED)\
-	failed |= !check_blake1_(LENGTH, "0x"MSG, buf, libblake_decode_hex(MSG, SIZE_MAX, buf), 0, EXPECTED)
+	failed |= !check_blake1_(LENGTH, "0x"MSG, buf, libblake_decode_hex(MSG, SIZE_MAX, buf, &(int){0}), 0, EXPECTED)
 # define CHECK_BLAKE224_HEX(MSG, EXPECTED) CHECK_BLAKE1_HEX(224, MSG, EXPECTED)
 # define CHECK_BLAKE256_HEX(MSG, EXPECTED) CHECK_BLAKE1_HEX(256, MSG, EXPECTED)
 # define CHECK_BLAKE384_HEX(MSG, EXPECTED) CHECK_BLAKE1_HEX(384, MSG, EXPECTED)
@@ -84,7 +85,7 @@ digest_blake1(int length, const void *msg, size_t msglen, size_t bits)
 #endif
 
 #define CHECK_BLAKE1_BITS(LENGTH, MSG, BITS, EXPECTED)\
-	failed |= !check_blake1_(LENGTH, "0x"MSG, buf, libblake_decode_hex(MSG, SIZE_MAX, buf), BITS, EXPECTED)
+	failed |= !check_blake1_(LENGTH, "0x"MSG, buf, libblake_decode_hex(MSG, SIZE_MAX, buf, &(int){0}), BITS, EXPECTED)
 #define CHECK_BLAKE224_BITS(MSG, BITS, EXPECTED) CHECK_BLAKE1_BITS(224, MSG, BITS, EXPECTED)
 #define CHECK_BLAKE256_BITS(MSG, BITS, EXPECTED) CHECK_BLAKE1_BITS(256, MSG, BITS, EXPECTED)
 #define CHECK_BLAKE384_BITS(MSG, BITS, EXPECTED) CHECK_BLAKE1_BITS(384, MSG, BITS, EXPECTED)
