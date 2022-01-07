@@ -74,11 +74,11 @@ struct libblake_blake2s_params {
 	uint_least8_t key_len; /* in bytes, [0, 32] */
 	uint_least8_t fanout; /* normally 1 */
 	uint_least8_t depth; /* normally 1 */
-	uint_least32_t leaf_len;
-	uint_least32_t node_offset;
-	uint_least16_t xof_len;
-	uint_least8_t node_depth;
-	uint_least8_t inner_len;
+	uint_least32_t leaf_len; /* normally 0 */
+	uint_least32_t node_offset; /* normally 0 */
+	uint_least16_t xof_len; /* normally 0 */
+	uint_least8_t node_depth; /* normally 0 */
+	uint_least8_t inner_len; /* normally 0 */
 	uint_least8_t salt[8];
 	uint_least8_t pepper[8];
 };
@@ -88,11 +88,11 @@ struct libblake_blake2b_params {
 	uint_least8_t key_len; /* in bytes, [0, 64] */
 	uint_least8_t fanout; /* normally 1 */
 	uint_least8_t depth; /* normally 1 */
-	uint_least32_t leaf_len;
-	uint_least32_t node_offset;
-	uint_least32_t xof_len;
-	uint_least8_t node_depth;
-	uint_least8_t inner_len;
+	uint_least32_t leaf_len; /* normally 0 */
+	uint_least32_t node_offset; /* normally 0 */
+	uint_least32_t xof_len; /* normally 0 */
+	uint_least8_t node_depth; /* normally 0 */
+	uint_least8_t inner_len; /* normally 0 */
 	uint_least8_t salt[16];
 	uint_least8_t pepper[16];
 };
