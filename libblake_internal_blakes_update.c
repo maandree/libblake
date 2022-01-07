@@ -43,26 +43,26 @@ rotate_right(uint_least32_t x, int n)
 size_t
 libblake_internal_blakes_update(struct libblake_blakes_state *state, const unsigned char *data, size_t len)
 {
-	size_t ret = 0;
+	size_t off = 0;
 	struct libblake_blakes_state s;
 	uint_least32_t v[16], m[16];
 
 	memcpy(&s, state, sizeof(s));
 
-	for (; len - ret >= 64; ret += 64, data = &data[64]) {
-		s.t[0] += 512;
-		if ((s.t[0] & UINT_LEAST32_C(0xFFFFffff)) < 512)
+	for (; len - off >= 64; off += 64, data = &data[64]) {
+		s.t[0] = (s.t[0] + 512) & UINT_LEAST32_C(0xFFFFffff);
+		if (s.t[0] < 512)
 			s.t[1] = (s.t[1] + 1) & UINT_LEAST32_C(0xFFFFffff);
 
 		memcpy(v, s.h, sizeof(s.h));
-		v[8]  = s.s[0] ^ CS0;
-		v[9]  = s.s[1] ^ CS1;
-		v[10] = s.s[2] ^ CS2;
-		v[11] = s.s[3] ^ CS3;
-		v[12] = s.t[0] ^ CS4;
-		v[13] = s.t[0] ^ CS5;
-		v[14] = s.t[1] ^ CS6;
-		v[15] = s.t[1] ^ CS7;
+		v[8] = s.s[0] ^ CS0;
+		v[9] = s.s[1] ^ CS1;
+		v[A] = s.s[2] ^ CS2;
+		v[B] = s.s[3] ^ CS3;
+		v[C] = s.t[0] ^ CS4;
+		v[D] = s.t[0] ^ CS5;
+		v[E] = s.t[1] ^ CS6;
+		v[F] = s.t[1] ^ CS7;
 
 		m[0] = decode_uint32_be(&data[0 * 4]);
 		m[1] = decode_uint32_be(&data[1 * 4]);
@@ -93,13 +93,13 @@ libblake_internal_blakes_update(struct libblake_blakes_state *state, const unsig
 
 #define ROUNDS(S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, SA, SB, SC, SD, SE, SF)\
 		GS(m[S0], m[S1], CS##S0, CS##S1, v[0], v[4], v[8], v[C]);\
-                GS(m[S2], m[S3], CS##S2, CS##S3, v[1], v[5], v[9], v[D]);\
-                GS(m[S4], m[S5], CS##S4, CS##S5, v[2], v[6], v[A], v[E]);\
-                GS(m[S6], m[S7], CS##S6, CS##S7, v[3], v[7], v[B], v[F]);\
-                GS(m[S8], m[S9], CS##S8, CS##S9, v[0], v[5], v[A], v[F]);\
-                GS(m[SA], m[SB], CS##SA, CS##SB, v[1], v[6], v[B], v[C]);\
-                GS(m[SC], m[SD], CS##SC, CS##SD, v[2], v[7], v[8], v[D]);\
-                GS(m[SE], m[SF], CS##SE, CS##SF, v[3], v[4], v[9], v[E])
+		GS(m[S2], m[S3], CS##S2, CS##S3, v[1], v[5], v[9], v[D]);\
+		GS(m[S4], m[S5], CS##S4, CS##S5, v[2], v[6], v[A], v[E]);\
+		GS(m[S6], m[S7], CS##S6, CS##S7, v[3], v[7], v[B], v[F]);\
+		GS(m[S8], m[S9], CS##S8, CS##S9, v[0], v[5], v[A], v[F]);\
+		GS(m[SA], m[SB], CS##SA, CS##SB, v[1], v[6], v[B], v[C]);\
+		GS(m[SC], m[SD], CS##SC, CS##SD, v[2], v[7], v[8], v[D]);\
+		GS(m[SE], m[SF], CS##SE, CS##SF, v[3], v[4], v[9], v[E])
 
 		ROUNDS(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F);
 		ROUNDS(E, A, 4, 8, 9, F, D, 6, 1, C, 0, 2, B, 7, 5, 3);
@@ -128,5 +128,5 @@ libblake_internal_blakes_update(struct libblake_blakes_state *state, const unsig
 
 	memcpy(state, &s, sizeof(s));
 
-	return ret;
+	return off;
 }

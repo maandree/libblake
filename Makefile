@@ -20,28 +20,45 @@ OBJ_BLAKE =\
 	libblake_blake224_digest.o\
 	libblake_blake224_digest_get_required_input_size.o\
 	libblake_blake224_init.o\
+	libblake_blake224_init2.o\
 	libblake_blake224_update.o\
 	libblake_blake256_digest.o\
 	libblake_blake256_digest_get_required_input_size.o\
 	libblake_blake256_init.o\
+	libblake_blake256_init2.o\
 	libblake_blake256_update.o\
 	libblake_blake384_digest.o\
 	libblake_blake384_digest_get_required_input_size.o\
 	libblake_blake384_init.o\
+	libblake_blake384_init2.o\
 	libblake_blake384_update.o\
 	libblake_blake512_digest.o\
 	libblake_blake512_digest_get_required_input_size.o\
 	libblake_blake512_init.o\
+	libblake_blake512_init2.o\
 	libblake_blake512_update.o\
 	libblake_internal_blakeb_digest.o\
 	libblake_internal_blakes_digest.o\
 	libblake_internal_blakeb_update.o\
 	libblake_internal_blakes_update.o
 
+OBJ_BLAKE2 =\
+	libblake_blake2b_digest.o\
+	libblake_blake2s_digest.o\
+	libblake_blake2b_digest_get_required_input_size.o\
+	libblake_blake2s_digest_get_required_input_size.o\
+	libblake_blake2b_init.o\
+	libblake_blake2s_init.o\
+	libblake_blake2b_update.o\
+	libblake_blake2s_update.o\
+	libblake_internal_blake2b_compress.o\
+	libblake_internal_blake2s_compress.o
+
 OBJ =\
 	libblake_encode_hex.o\
 	libblake_decode_hex.o\
-	$(OBJ_BLAKE)
+	$(OBJ_BLAKE)\
+	$(OBJ_BLAKE2)
 
 HDR =\
 	libblake.h

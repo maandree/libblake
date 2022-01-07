@@ -26,3 +26,6 @@ HIDDEN void libblake_internal_blakes_digest(struct libblake_blakes_state *state,
                                             size_t bits, const char *suffix, unsigned char *output, size_t words_out);
 HIDDEN void libblake_internal_blakeb_digest(struct libblake_blakeb_state *state, unsigned char *data, size_t len,
                                             size_t bits, const char *suffix, unsigned char *output, size_t words_out);
+
+HIDDEN void libblake_internal_blake2s_compress(struct libblake_blake2s_state *state, const unsigned char *data);
+HIDDEN void libblake_internal_blake2b_compress(struct libblake_blake2b_state *state, const unsigned char *data);

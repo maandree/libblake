@@ -123,10 +123,10 @@ check_blake1(void)
 	CHECK_BLAKE512_STR("", "a8cfbbd73726062df0c6864dda65defe58ef0cc52a5625090fa17601e1eecd1b628e94f396ae402a00acc9eab77b4d4c2e852aaaa25a636d80af3fc7913ef5b8");
 
 	CHECK_BLAKE512_STR("The quick brown fox jumps over the lazy dog",
-			   "1f7e26f63b6ad25a0896fd978fd050a1766391d2fd0471a77afb975e5034b7ad2d9ccf8dfb47abbbe656e1b82fbc634ba42ce186e8dc5e1ce09a885d41f43451");
+	                   "1f7e26f63b6ad25a0896fd978fd050a1766391d2fd0471a77afb975e5034b7ad2d9ccf8dfb47abbbe656e1b82fbc634ba42ce186e8dc5e1ce09a885d41f43451");
 
 	CHECK_BLAKE512_STR("The quick brown fox jumps over the lazy dof",
-			   "a701c2a1f9baabd8b1db6b75aee096900276f0b86dc15d247ecc03937b370324a16a4ffc0c3a85cd63229cfa15c15f4ba6d46ae2e849ed6335e9ff43b764198a");
+	                   "a701c2a1f9baabd8b1db6b75aee096900276f0b86dc15d247ecc03937b370324a16a4ffc0c3a85cd63229cfa15c15f4ba6d46ae2e849ed6335e9ff43b764198a");
 
 	bits = 1;
 #define X(INPUT, EXPECT) CHECK_BLAKE224_BITS(INPUT, bits++, EXPECT);
@@ -343,6 +343,146 @@ check_blake1(void)
 	return failed;
 }
 
+static const char *
+digest_blake2s(int length, const void *msg, size_t msglen)
+{
+	static char hex[1025];
+	unsigned char buf[512];
+	size_t req;
+	char *data;
+	struct libblake_blake2s_state s;
+	struct libblake_blake2s_params params;
+
+	memset(&params, 0, sizeof(params));
+	params.digest_len = (uint_least8_t)(length / 8);
+	params.fanout = 1;
+	params.depth = 1;
+
+	req = libblake_blake2s_digest_get_required_input_size(msglen);
+	data = malloc(req);
+	memcpy(data, msg, msglen);
+	libblake_blake2s_init(&s, &params, NULL);
+	libblake_blake2s_digest(&s, data, msglen, (size_t)length / 8, buf);
+	libblake_encode_hex(buf, (size_t)length / 8, hex, 0);
+	free(data);
+
+	return hex;
+}
+
+#define CHECK_BLAKE2S_STR(LENGTH, MSG, EXPECTED)\
+	failed |= !check_blake2s_(LENGTH, "“"MSG"”", MSG, sizeof(MSG) - 1, EXPECTED)
+#define CHECK_BLAKE2S_224_STR(MSG, EXPECTED) CHECK_BLAKE2S_STR(224, MSG, EXPECTED)
+#define CHECK_BLAKE2S_256_STR(MSG, EXPECTED) CHECK_BLAKE2S_STR(256, MSG, EXPECTED)
+
+#if 0
+# define CHECK_BLAKE2S_HEX(LENGTH, MSG, EXPECTED)\
+	failed |= !check_blake2s_(LENGTH, "0x"MSG, buf, libblake_decode_hex(MSG, SIZE_MAX, buf, &(int){0}), EXPECTED)
+# define CHECK_BLAKE2S_224_HEX(MSG, EXPECTED) CHECK_BLAKE2S_HEX(224, MSG, EXPECTED)
+# define CHECK_BLAKE2S_256_HEX(MSG, EXPECTED) CHECK_BLAKE2S_HEX(256, MSG, EXPECTED)
+#endif
+
+static int
+check_blake2s_(int length, const char *dispmsg, const void *msg, size_t msglen, const char *expected)
+{
+	const char *result;
+	result = digest_blake2s(length, msg, msglen);
+	if (strcasecmp(result, expected)) {
+		fprintf(stderr, "BLAKE2s-%i failed for %s:\n", length, dispmsg);
+		fprintf(stderr, "\tResult:   %s\n", result);
+		fprintf(stderr, "\tExpected: %s\n", expected);
+		fprintf(stderr, "\n");
+		return 0;
+	}
+	return 1;
+}
+
+static int
+check_blake2s(void)
+{
+#if 0
+	char buf[1025];
+#endif
+	int failed = 0;
+
+	CHECK_BLAKE2S_224_STR("", "1fa1291e65248b37b3433475b2a0dd63d54a11ecc4e3e034e7bc1ef4");
+	CHECK_BLAKE2S_256_STR("", "69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9");
+
+	return failed;
+}
+
+static const char *
+digest_blake2b(int length, const void *msg, size_t msglen)
+{
+	static char hex[1025];
+	unsigned char buf[512];
+	size_t req;
+	char *data;
+	struct libblake_blake2b_state s;
+	struct libblake_blake2b_params params;
+
+	memset(&params, 0, sizeof(params));
+	params.digest_len = (uint_least8_t)(length / 8);
+	params.fanout = 1;
+	params.depth = 1;
+
+	req = libblake_blake2b_digest_get_required_input_size(msglen);
+	data = malloc(req);
+	memcpy(data, msg, msglen);
+	libblake_blake2b_init(&s, &params, NULL);
+	libblake_blake2b_digest(&s, data, msglen, (size_t)length / 8, buf);
+	libblake_encode_hex(buf, (size_t)length / 8, hex, 0);
+	free(data);
+
+	return hex;
+}
+
+#define CHECK_BLAKE2B_STR(LENGTH, MSG, EXPECTED)\
+	failed |= !check_blake2b_(LENGTH, "“"MSG"”", MSG, sizeof(MSG) - 1, EXPECTED)
+#define CHECK_BLAKE2B_384_STR(MSG, EXPECTED) CHECK_BLAKE2B_STR(384, MSG, EXPECTED)
+#define CHECK_BLAKE2B_512_STR(MSG, EXPECTED) CHECK_BLAKE2B_STR(512, MSG, EXPECTED)
+
+#if 0
+# define CHECK_BLAKE2B_HEX(LENGTH, MSG, EXPECTED)\
+	failed |= !check_blake2b_(LENGTH, "0x"MSG, buf, libblake_decode_hex(MSG, SIZE_MAX, buf, &(int){0}), EXPECTED)
+# define CHECK_BLAKE2B_384_HEX(MSG, EXPECTED) CHECK_BLAKE2B_HEX(384, MSG, EXPECTED)
+# define CHECK_BLAKE2B_512_HEX(MSG, EXPECTED) CHECK_BLAKE2B_HEX(512, MSG, EXPECTED)
+#endif
+
+static int
+check_blake2b_(int length, const char *dispmsg, const void *msg, size_t msglen, const char *expected)
+{
+	const char *result;
+	result = digest_blake2b(length, msg, msglen);
+	if (strcasecmp(result, expected)) {
+		fprintf(stderr, "BLAKE2b-%i failed for %s:\n", length, dispmsg);
+		fprintf(stderr, "\tResult:   %s\n", result);
+		fprintf(stderr, "\tExpected: %s\n", expected);
+		fprintf(stderr, "\n");
+		return 0;
+	}
+	return 1;
+}
+
+static int
+check_blake2b(void)
+{
+#if 0
+	char buf[1025];
+#endif
+	int failed = 0;
+
+	CHECK_BLAKE2B_384_STR("", "b32811423377f52d7862286ee1a72ee540524380fda1724a6f25d7978c6fd3244a6caf0498812673c5e05ef583825100");
+	CHECK_BLAKE2B_512_STR("", "786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce");
+
+	CHECK_BLAKE2B_512_STR("The quick brown fox jumps over the lazy dog",
+	                      "a8add4bdddfd93e4877d2746e62817b116364a1fa7bc148d95090bc7333b3673f82401cf7aa2e4cb1ecd90296e3f14cb5413f8ed77be73045b13914cdcd6a918");
+
+	CHECK_BLAKE2B_512_STR("The quick brown fox jumps over the lazy dof",
+	                      "ab6b007747d8068c02e25a6008db8a77c218d94f3b40d2291a7dc8a62090a744c082ea27af01521a102e42f480a31e9844053f456b4b41e8aa78bbe5c12957bb");
+
+	return failed;
+}
+
 int
 main(void)
 {
@@ -352,6 +492,8 @@ main(void)
 	CHECK_HEX(0, 00, 12, 32, 00, 45, 67, 82, 9a, b0, cd, fe, ff, 80, 08, cc, 28);
 
 	failed |= check_blake1();
+	failed |= check_blake2s();
+	failed |= check_blake2b();
 
 	return failed;
 }

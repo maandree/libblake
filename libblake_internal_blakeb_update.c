@@ -47,26 +47,26 @@ rotate_right(uint_least64_t x, int n)
 size_t
 libblake_internal_blakeb_update(struct libblake_blakeb_state *state, const unsigned char *data, size_t len)
 {
-	size_t ret = 0;
+	size_t off = 0;
 	struct libblake_blakeb_state s;
 	uint_least64_t v[16], m[16];
 
 	memcpy(&s, state, sizeof(s));
 
-	for (; len - ret >= 128; ret += 128, data = &data[128]) {
-		s.t[0] += 1024;
-		if ((s.t[0] & UINT_LEAST64_C(0xFFFFffffFFFFffff)) < 1024)
+	for (; len - off >= 128; off += 128, data = &data[128]) {
+		s.t[0] = (s.t[0] + 1024) & UINT_LEAST64_C(0xFFFFffffFFFFffff);
+		if (s.t[0] < 1024)
 			s.t[1] = (s.t[1] + 1) & UINT_LEAST64_C(0xFFFFffffFFFFffff);
 
 		memcpy(v, s.h, sizeof(s.h));
-		v[8]  = s.s[0] ^ CB0;
-		v[9]  = s.s[1] ^ CB1;
-		v[10] = s.s[2] ^ CB2;
-		v[11] = s.s[3] ^ CB3;
-		v[12] = s.t[0] ^ CB4;
-		v[13] = s.t[0] ^ CB5;
-		v[14] = s.t[1] ^ CB6;
-		v[15] = s.t[1] ^ CB7;
+		v[8] = s.s[0] ^ CB0;
+		v[9] = s.s[1] ^ CB1;
+		v[A] = s.s[2] ^ CB2;
+		v[B] = s.s[3] ^ CB3;
+		v[C] = s.t[0] ^ CB4;
+		v[D] = s.t[0] ^ CB5;
+		v[E] = s.t[1] ^ CB6;
+		v[F] = s.t[1] ^ CB7;
 
 		m[0] = decode_uint64_be(&data[0 * 8]);
 		m[1] = decode_uint64_be(&data[1 * 8]);
@@ -97,13 +97,13 @@ libblake_internal_blakeb_update(struct libblake_blakeb_state *state, const unsig
 
 #define ROUNDB(S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, SA, SB, SC, SD, SE, SF)\
 		GB(m[S0], m[S1], CB##S0, CB##S1, v[0], v[4], v[8], v[C]);\
-                GB(m[S2], m[S3], CB##S2, CB##S3, v[1], v[5], v[9], v[D]);\
-                GB(m[S4], m[S5], CB##S4, CB##S5, v[2], v[6], v[A], v[E]);\
-                GB(m[S6], m[S7], CB##S6, CB##S7, v[3], v[7], v[B], v[F]);\
-                GB(m[S8], m[S9], CB##S8, CB##S9, v[0], v[5], v[A], v[F]);\
-                GB(m[SA], m[SB], CB##SA, CB##SB, v[1], v[6], v[B], v[C]);\
-                GB(m[SC], m[SD], CB##SC, CB##SD, v[2], v[7], v[8], v[D]);\
-                GB(m[SE], m[SF], CB##SE, CB##SF, v[3], v[4], v[9], v[E])
+		GB(m[S2], m[S3], CB##S2, CB##S3, v[1], v[5], v[9], v[D]);\
+		GB(m[S4], m[S5], CB##S4, CB##S5, v[2], v[6], v[A], v[E]);\
+		GB(m[S6], m[S7], CB##S6, CB##S7, v[3], v[7], v[B], v[F]);\
+		GB(m[S8], m[S9], CB##S8, CB##S9, v[0], v[5], v[A], v[F]);\
+		GB(m[SA], m[SB], CB##SA, CB##SB, v[1], v[6], v[B], v[C]);\
+		GB(m[SC], m[SD], CB##SC, CB##SD, v[2], v[7], v[8], v[D]);\
+		GB(m[SE], m[SF], CB##SE, CB##SF, v[3], v[4], v[9], v[E])
 
 		ROUNDB(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F);
 		ROUNDB(E, A, 4, 8, 9, F, D, 6, 1, C, 0, 2, B, 7, 5, 3);
@@ -134,5 +134,5 @@ libblake_internal_blakeb_update(struct libblake_blakeb_state *state, const unsig
 
 	memcpy(state, &s, sizeof(s));
 
-	return ret;
+	return off;
 }
