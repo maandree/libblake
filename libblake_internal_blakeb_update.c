@@ -1,13 +1,6 @@
 /* See LICENSE file for copyright and license details. */
 #include "common.h"
 
-#define A 10
-#define B 11
-#define C 12
-#define D 13
-#define E 14
-#define F 15
-
 #define CB0 UINT_LEAST64_C(0x243F6A8885A308D3)
 #define CB1 UINT_LEAST64_C(0x13198A2E03707344)
 #define CB2 UINT_LEAST64_C(0xA4093822299F31D0)

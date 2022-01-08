@@ -5,12 +5,22 @@
 #include <inttypes.h>
 #include <string.h>
 
-#if !defined(UINT_LEAST32_C) && defined(UINT32_C)
-# define UINT_LEAST32_C(X) UINT32_C(X)
-#endif
-
 #if !defined(UINT_LEAST64_C) && defined(UINT64_C)
 # define UINT_LEAST64_C(X) UINT64_C(X)
+#elif !defined(UINT_LEAST64_C)
+# define UINT_LEAST64_C(X) X##ULL
+#endif
+
+#if !defined(UINT_LEAST32_C) && defined(UINT32_C)
+# define UINT_LEAST32_C(X) UINT32_C(X)
+#elif !defined(UINT_LEAST32_C)
+# define UINT_LEAST32_C(X) X##UL
+#endif
+
+#if !defined(UINT_LEAST16_C) && defined(UINT16_C)
+# define UINT_LEAST16_C(X) UINT16_C(X)
+#elif !defined(UINT_LEAST16_C)
+# define UINT_LEAST16_C(X) X##U
 #endif
 
 #if defined(__GNUC__)
@@ -18,6 +28,13 @@
 #else
 # define HIDDEN
 #endif
+
+#define A 10
+#define B 11
+#define C 12
+#define D 13
+#define E 14
+#define F 15
 
 HIDDEN size_t libblake_internal_blakes_update(struct libblake_blakes_state *state, const unsigned char *data, size_t len);
 HIDDEN size_t libblake_internal_blakeb_update(struct libblake_blakeb_state *state, const unsigned char *data, size_t len);
@@ -29,3 +46,9 @@ HIDDEN void libblake_internal_blakeb_digest(struct libblake_blakeb_state *state,
 
 HIDDEN void libblake_internal_blake2s_compress(struct libblake_blake2s_state *state, const unsigned char *data);
 HIDDEN void libblake_internal_blake2b_compress(struct libblake_blake2b_state *state, const unsigned char *data);
+
+HIDDEN void libblake_internal_blake2xs_init0(struct libblake_blake2xs_state *state, const struct libblake_blake2xs_params *params);
+HIDDEN void libblake_internal_blake2xb_init0(struct libblake_blake2xb_state *state, const struct libblake_blake2xb_params *params);
+
+HIDDEN void libblake_internal_blake2s_output_digest(struct libblake_blake2s_state *state, size_t output_len, unsigned char *output);
+HIDDEN void libblake_internal_blake2b_output_digest(struct libblake_blake2b_state *state, size_t output_len, unsigned char *output);

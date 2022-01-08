@@ -1,13 +1,6 @@
 /* See LICENSE file for copyright and license details. */
 #include "common.h"
 
-#define A 10
-#define B 11
-#define C 12
-#define D 13
-#define E 14
-#define F 15
-
 void
 libblake_blake2b_init(struct libblake_blake2b_state *state, const struct libblake_blake2b_params *params, const unsigned char *key)
 {
@@ -29,18 +22,8 @@ libblake_blake2b_init(struct libblake_blake2b_state *state, const struct libblak
 	state->h[0] ^= ((uint_least64_t)params->key_len & 255) << 8;
 	state->h[0] ^= ((uint_least64_t)params->fanout & 255) << 16;
 	state->h[0] ^= ((uint_least64_t)params->depth & 255) << 24;
-	state->h[0] ^= ((uint_least64_t)(params->leaf_len >> 0) & 255) << 32;
-	state->h[0] ^= ((uint_least64_t)(params->leaf_len >> 8) & 255) << 40;
-	state->h[0] ^= ((uint_least64_t)(params->leaf_len >> 16) & 255) << 48;
-	state->h[0] ^= ((uint_least64_t)(params->leaf_len >> 24) & 255) << 56;
-	state->h[1] ^= ((uint_least64_t)(params->node_offset >> 0) & 255) << 0;
-	state->h[1] ^= ((uint_least64_t)(params->node_offset >> 8) & 255) << 8;
-	state->h[1] ^= ((uint_least64_t)(params->node_offset >> 16) & 255) << 16;
-	state->h[1] ^= ((uint_least64_t)(params->node_offset >> 24) & 255) << 24;
-	state->h[1] ^= ((uint_least64_t)(params->xof_len >> 0) & 255) << 32;
-	state->h[1] ^= ((uint_least64_t)(params->xof_len >> 8) & 255) << 40;
-	state->h[1] ^= ((uint_least64_t)(params->xof_len >> 16) & 255) << 48;
-	state->h[1] ^= ((uint_least64_t)(params->xof_len >> 24) & 255) << 56;
+	state->h[0] ^= (uint_least64_t)(params->leaf_len & UINT_LEAST32_C(0xFFFFffff)) << 32;
+	state->h[1] ^= params->node_offset & UINT_LEAST64_C(0xFFFFffffFFFFffff);
 	state->h[2] ^= ((uint_least64_t)params->node_depth & 255) << 0;
 	state->h[2] ^= ((uint_least64_t)params->inner_len & 255) << 8;
 	state->h[4] ^= ((uint_least64_t)params->salt[0] & 255) << 0;

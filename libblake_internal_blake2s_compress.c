@@ -1,13 +1,6 @@
 /* See LICENSE file for copyright and license details. */
 #include "common.h"
 
-#define A 10
-#define B 11
-#define C 12
-#define D 13
-#define E 14
-#define F 15
-
 static uint_least32_t
 decode_uint32_le(const unsigned char *data)
 {

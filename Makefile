@@ -51,8 +51,22 @@ OBJ_BLAKE2 =\
 	libblake_blake2s_init.o\
 	libblake_blake2b_update.o\
 	libblake_blake2s_update.o\
+	libblake_blake2xb_digest.o\
+	libblake_blake2xs_digest.o\
+	libblake_blake2xb_init.o\
+	libblake_blake2xs_init.o\
+	libblake_blake2xb_predigest.o\
+	libblake_blake2xs_predigest.o\
+	libblake_blake2xb_predigest_get_required_input_size.o\
+	libblake_blake2xs_predigest_get_required_input_size.o\
+	libblake_blake2xb_update.o\
+	libblake_blake2xs_update.o\
 	libblake_internal_blake2b_compress.o\
-	libblake_internal_blake2s_compress.o
+	libblake_internal_blake2s_compress.o\
+	libblake_internal_blake2s_output_digest.o\
+	libblake_internal_blake2b_output_digest.o\
+	libblake_internal_blake2xb_init0.o\
+	libblake_internal_blake2xs_init0.o
 
 OBJ =\
 	libblake_encode_hex.o\
@@ -61,7 +75,8 @@ OBJ =\
 	$(OBJ_BLAKE2)
 
 HDR =\
-	libblake.h
+	libblake.h\
+	common.h
 
 LOBJ = $(OBJ:.o=.lo)
 
@@ -69,6 +84,7 @@ LOBJ = $(OBJ:.o=.lo)
 all: libblake.a libblake.$(LIBEXT) test
 $(OBJ): $(HDR)
 $(LOBJ): $(HDR)
+test.o: $(HDR)
 
 .c.o:
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
