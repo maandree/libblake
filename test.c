@@ -362,7 +362,7 @@ digest_blake2s(int length, const void *msg, size_t msglen)
 	data = malloc(req);
 	memcpy(data, msg, msglen);
 	libblake_blake2s_init(&s, &params, NULL);
-	libblake_blake2s_digest(&s, data, msglen, (size_t)length / 8, buf);
+	libblake_blake2s_digest(&s, data, msglen, 0, (size_t)length / 8, buf);
 	libblake_encode_hex(buf, (size_t)length / 8, hex, 0);
 	free(data);
 
@@ -429,7 +429,7 @@ digest_blake2b(int length, const void *msg, size_t msglen)
 	data = malloc(req);
 	memcpy(data, msg, msglen);
 	libblake_blake2b_init(&s, &params, NULL);
-	libblake_blake2b_digest(&s, data, msglen, (size_t)length / 8, buf);
+	libblake_blake2b_digest(&s, data, msglen, 0, (size_t)length / 8, buf);
 	libblake_encode_hex(buf, (size_t)length / 8, hex, 0);
 	free(data);
 

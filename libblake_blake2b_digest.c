@@ -35,7 +35,7 @@ encode_uint64_le(unsigned char *out, uint_least64_t value, size_t bytes)
 }
 
 void
-libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data_, size_t len,
+libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data_, size_t len, int last_node,
                         size_t output_len, unsigned char output[static output_len])
 {
 	unsigned char *data = data_;
@@ -46,6 +46,9 @@ libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data_, size_
 	len -= r;
 
 	state->f[0] = UINT_LEAST64_C(0xFFFFffffFFFFffff);
+	if (last_node)
+		state->f[1] = UINT_LEAST64_C(0xFFFFffffFFFFffff);
+
 	memset(&data[len], 0, 128 - len);
 
 	state->t[0] = (state->t[0] + len) & UINT_LEAST64_C(0xFFFFffffFFFFffff);

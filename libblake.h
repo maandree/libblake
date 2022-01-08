@@ -112,14 +112,14 @@ struct libblake_blake2b_state {
 void libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblake_blake2s_params *params,
                            const unsigned char *key /* append null bytes until 64 bytes; if key is used */);
 size_t libblake_blake2s_update(struct libblake_blake2s_state *state, const void *data, size_t len);
-void libblake_blake2s_digest(struct libblake_blake2s_state *state, void *data, size_t len,
+void libblake_blake2s_digest(struct libblake_blake2s_state *state, void *data, size_t len, int last_node /* normally 0 */,
                              size_t output_len, unsigned char output[static output_len]);
 LIBBLAKE_CONST__ size_t libblake_blake2s_digest_get_required_input_size(size_t len);
 
 void libblake_blake2b_init(struct libblake_blake2b_state *state, const struct libblake_blake2b_params *params,
                            const unsigned char *key /* append null bytes until 128 bytes; if key is used */);
 size_t libblake_blake2b_update(struct libblake_blake2b_state *state, const void *data, size_t len);
-void libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data, size_t len,
+void libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data, size_t len, int last_node /* normally 0 */,
                              size_t output_len, unsigned char output[static output_len]);
 LIBBLAKE_CONST__ size_t libblake_blake2b_digest_get_required_input_size(size_t len);
 
