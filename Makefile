@@ -47,12 +47,16 @@ OBJ_BLAKE2 =\
 	libblake_blake2s_digest.o\
 	libblake_blake2b_digest_get_required_input_size.o\
 	libblake_blake2s_digest_get_required_input_size.o\
+	libblake_blake2b_force_update.o\
+	libblake_blake2s_force_update.o\
 	libblake_blake2b_init.o\
 	libblake_blake2s_init.o\
 	libblake_blake2b_update.o\
 	libblake_blake2s_update.o\
 	libblake_blake2xb_digest.o\
 	libblake_blake2xs_digest.o\
+	libblake_blake2xb_force_update.o\
+	libblake_blake2xs_force_update.o\
 	libblake_blake2xb_init.o\
 	libblake_blake2xs_init.o\
 	libblake_blake2xb_predigest.o\
