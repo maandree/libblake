@@ -5,6 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wpadded"
+# pragma clang diagnostic ignored "-Wvla"
+#endif
+
 #ifndef LIBBLAKE_PUBLIC__
 # if defined(_MSC_VER)
 #  define LIBBLAKE_PUBLIC__ __declspec(dllexport)
@@ -75,7 +81,6 @@ LIBBLAKE_PUBLIC__ size_t libblake_blake512_update(struct libblake_blake512_state
 LIBBLAKE_PUBLIC__ void libblake_blake512_digest(struct libblake_blake512_state *state, void *data, size_t len, size_t bits,
                                                 const char *suffix, unsigned char output[static LIBBLAKE_BLAKE512_OUTPUT_SIZE]);
 LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ size_t libblake_blake512_digest_get_required_input_size(size_t len, size_t bits, const char *suffix);
-
 
 struct libblake_blake2s_params {
 	uint_least8_t digest_len; /* in bytes, [1, 32] */
@@ -221,5 +226,9 @@ LIBBLAKE_PUBLIC__ void libblake_blake2xb_digest(const struct libblake_blake2xb_s
                                                 uint_least32_t i /* start 0, increase by 1 until i * 64 >= desired hash length */,
                                                 uint_least8_t len /* desired hash MIN(length - i * 64, 64) */,
                                                 unsigned char output[static len] /* output for hash offset by i * 64 */);
+
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#endif
 
 #endif

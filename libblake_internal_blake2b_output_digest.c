@@ -50,7 +50,7 @@ libblake_internal_blake2b_output_digest(struct libblake_blake2b_state *state, si
 	size_t i, j;
 
 #ifdef LITTLE_ENDIAN
-	if ((uint_least64_t)(UINT_LEAST64_C(0xFFFFffffFFFFffff) + 1) == 0) {
+	if (CODE_KILLER((uint_least64_t)(UINT_LEAST64_C(0xFFFFffffFFFFffff) + 1) == 0)) {
 		/* 37.5x performance improvement;
 		 * even though the compiler is smart enough to optimise
 		 * `encode_uint64_le(&output[i], state->h[j], 8);` to a

@@ -37,15 +37,22 @@ libblake_internal_blake2xb_init0(struct libblake_blake2xb_state *state, const st
 	state->b2b.f[0] = 0;
 	state->b2b.f[1] = 0;
 
-	if (offsetof(struct libblake_blake2xb_params, inner_len) == 17) {
-		state->b2b.h[0] ^= le64(((uint_least64_t *)params)[0]);
-		state->b2b.h[1] ^= le64(((uint_least64_t *)params)[1]);
+	if (CODE_KILLER(offsetof(struct libblake_blake2xb_params, inner_len) == 17)) {
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wcast-align"
+#endif
+		state->b2b.h[0] ^= le64(((const uint_least64_t *)params)[0]);
+		state->b2b.h[1] ^= le64(((const uint_least64_t *)params)[1]);
 		state->b2b.h[2] ^= le64(((uint_least64_t)params->node_depth << 0) |
 		                        ((uint_least64_t)params->inner_len << 8));
-		state->b2b.h[4] ^= le64(*(uint_least64_t *)&params->salt[0]);
-		state->b2b.h[5] ^= le64(*(uint_least64_t *)&params->salt[8]);
-		state->b2b.h[6] ^= le64(*(uint_least64_t *)&params->pepper[0]);
-		state->b2b.h[7] ^= le64(*(uint_least64_t *)&params->pepper[8]);
+		state->b2b.h[4] ^= le64(*(const uint_least64_t *)&params->salt[0]);
+		state->b2b.h[5] ^= le64(*(const uint_least64_t *)&params->salt[8]);
+		state->b2b.h[6] ^= le64(*(const uint_least64_t *)&params->pepper[0]);
+		state->b2b.h[7] ^= le64(*(const uint_least64_t *)&params->pepper[8]);
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#endif
 	} else {
 		state->b2b.h[0] ^= ((uint_least64_t)params->digest_len & 255) << 0;
 		state->b2b.h[0] ^= ((uint_least64_t)params->key_len & 255) << 8;

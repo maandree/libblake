@@ -33,15 +33,22 @@ libblake_internal_blake2xs_init0(struct libblake_blake2xs_state *state, const st
 	state->b2s.f[0] = 0;
 	state->b2s.f[1] = 0;
 
-	if (sizeof(*params) == sizeof(state->b2s.h)) {
-		state->b2s.h[0] ^= le32(((uint_least32_t *)params)[0]);
-		state->b2s.h[1] ^= le32(((uint_least32_t *)params)[1]);
-		state->b2s.h[2] ^= le32(((uint_least32_t *)params)[2]);
-		state->b2s.h[3] ^= le32(((uint_least32_t *)params)[3]);
-		state->b2s.h[4] ^= le32(((uint_least32_t *)params)[4]);
-		state->b2s.h[5] ^= le32(((uint_least32_t *)params)[5]);
-		state->b2s.h[6] ^= le32(((uint_least32_t *)params)[6]);
-		state->b2s.h[7] ^= le32(((uint_least32_t *)params)[7]);
+	if (CODE_KILLER(sizeof(*params) == sizeof(state->b2s.h))) {
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wcast-align"
+#endif
+		state->b2s.h[0] ^= le32(((const uint_least32_t *)params)[0]);
+		state->b2s.h[1] ^= le32(((const uint_least32_t *)params)[1]);
+		state->b2s.h[2] ^= le32(((const uint_least32_t *)params)[2]);
+		state->b2s.h[3] ^= le32(((const uint_least32_t *)params)[3]);
+		state->b2s.h[4] ^= le32(((const uint_least32_t *)params)[4]);
+		state->b2s.h[5] ^= le32(((const uint_least32_t *)params)[5]);
+		state->b2s.h[6] ^= le32(((const uint_least32_t *)params)[6]);
+		state->b2s.h[7] ^= le32(((const uint_least32_t *)params)[7]);
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#endif
 	} else {
 		state->b2s.h[0] ^= ((uint_least32_t)params->digest_len & 255) << 0;
 		state->b2s.h[0] ^= ((uint_least32_t)params->key_len & 255) << 8;

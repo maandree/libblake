@@ -38,7 +38,7 @@ libblake_internal_blake2s_output_digest(struct libblake_blake2s_state *state, si
 	size_t i, j;
 
 #ifdef LITTLE_ENDIAN
-	if ((uint_least32_t)(UINT_LEAST32_C(0xFFFFffff) + 1) == 0) {
+	if (CODE_KILLER((uint_least32_t)(UINT_LEAST32_C(0xFFFFffff) + 1) == 0)) {
 		/* No noticeable performance benefit on amd64, however
 		 * it signficantly reduces the translation size and
 		 * a 37.5x performance benefit was seen on the 64-bit

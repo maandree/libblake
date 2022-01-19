@@ -58,6 +58,8 @@
 # error Endian is unknown
 #endif
 
+#define CODE_KILLER(X) (X)
+
 #define A 10
 #define B 11
 #define C 12
@@ -81,3 +83,9 @@ HIDDEN void libblake_internal_blake2xb_init0(struct libblake_blake2xb_state *sta
 
 HIDDEN void libblake_internal_blake2s_output_digest(struct libblake_blake2s_state *state, size_t output_len, unsigned char *output);
 HIDDEN void libblake_internal_blake2b_output_digest(struct libblake_blake2b_state *state, size_t output_len, unsigned char *output);
+
+#if defined(__clang__)
+# pragma clang diagnostic ignored "-Wunreachable-code"
+# pragma clang diagnostic ignored "-Wvla"
+# pragma clang diagnostic ignored "-Wimplicit-fallthrough"
+#endif

@@ -33,17 +33,24 @@ libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblak
 	state->f[0] = 0;
 	state->f[1] = 0;
 
-	if (offsetof(struct libblake_blake2s_params, inner_len) == 17) {
-		state->h[0] ^= le32(((uint_least32_t *)params)[0]);
-		state->h[1] ^= le32(((uint_least32_t *)params)[1]);
+	if (CODE_KILLER(offsetof(struct libblake_blake2s_params, inner_len) == 17)) {
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wcast-align"
+#endif
+		state->h[0] ^= le32(((const uint_least32_t *)params)[0]);
+		state->h[1] ^= le32(((const uint_least32_t *)params)[1]);
 		state->h[2] ^= le32((uint_least32_t)(params->node_offset >> 0));
-		state->h[3] ^= le32(((uint_least32_t)(params->node_offset >> 32) & UINT_LEAST64_C(0xFFFF)) |
+		state->h[3] ^= le32(((uint_least32_t)(params->node_offset >> 32) & UINT_LEAST32_C(0xFFFF)) |
 		                    ((uint_least32_t)params->node_depth << 16) |
 		                    ((uint_least32_t)params->inner_len << 24));
-		state->h[4] ^= le32(*(uint_least32_t *)&params->salt[0]);
-		state->h[5] ^= le32(*(uint_least32_t *)&params->salt[4]);
-		state->h[6] ^= le32(*(uint_least32_t *)&params->pepper[0]);
-		state->h[7] ^= le32(*(uint_least32_t *)&params->pepper[4]);
+		state->h[4] ^= le32(*(const uint_least32_t *)&params->salt[0]);
+		state->h[5] ^= le32(*(const uint_least32_t *)&params->salt[4]);
+		state->h[6] ^= le32(*(const uint_least32_t *)&params->pepper[0]);
+		state->h[7] ^= le32(*(const uint_least32_t *)&params->pepper[4]);
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#endif
 	} else {
 		state->h[0] ^= ((uint_least32_t)params->digest_len & 255) << 0;
 		state->h[0] ^= ((uint_least32_t)params->key_len & 255) << 8;
