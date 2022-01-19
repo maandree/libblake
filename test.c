@@ -406,6 +406,7 @@ check_blake2s(void)
 
 	CHECK_BLAKE2S_224_STR("", "1fa1291e65248b37b3433475b2a0dd63d54a11ecc4e3e034e7bc1ef4");
 	CHECK_BLAKE2S_256_STR("", "69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9");
+	/* TODO need more tests for BLAKE2s */
 
 	return failed;
 }
@@ -479,6 +480,7 @@ check_blake2b(void)
 
 	CHECK_BLAKE2B_512_STR("The quick brown fox jumps over the lazy dof",
 	                      "ab6b007747d8068c02e25a6008db8a77c218d94f3b40d2291a7dc8a62090a744c082ea27af01521a102e42f480a31e9844053f456b4b41e8aa78bbe5c12957bb");
+	/* TODO need more tests for BLAKE2b */
 
 	return failed;
 }
@@ -494,6 +496,8 @@ main(void)
 	failed |= check_blake1();
 	failed |= check_blake2s();
 	failed |= check_blake2b();
+	/* TODO need tests for BLAKE2Xs */
+	/* TODO need tests for BLAKE2Xb */
 
 	return failed;
 }
