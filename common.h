@@ -24,9 +24,38 @@
 #endif
 
 #if defined(__GNUC__)
-# define HIDDEN __attribute__((__visibility__("hidden")))
+# define HIDDEN __attribute__((visibility("hidden")))
+# define LIKELY(X) __builtin_expect(!!(X), 1)
+# define UNLIKELY(X) __builtin_expect(!!(X), 0)
+# define ASSUMING_CONSTANT(X) (__builtin_constant_p(X) && (X))
 #else
 # define HIDDEN
+# define LIKELY(X) X
+# define UNLIKELY(X) X
+# define ASSUMING_CONSTANT(X) 0
+# if defined(__has_builtin)
+#  if __has_builtin(__builtin_expect)
+#   undef LIKELY
+#   undef UNLIKELY
+#   define LIKELY(X) __builtin_expect(!!(X), 1)
+#   define UNLIKELY(X) __builtin_expect(!!(X), 0)
+#  endif
+#  if __has_builtin(__builtin_constant_p)
+#   undef ASSUMING_CONSTANT
+#   define ASSUMING_CONSTANT(X) (__builtin_constant_p(X) && (X))
+#  endif
+# endif
+#endif
+#if defined(__has_builtin)
+# define HAS_BUILTIN(X) __has_builtin(X)
+#else
+# define HAS_BUILTIN(X) 0
+#endif
+
+#if defined(__x86_64__) || defined(__i386__)
+# define LITTLE_ENDIAN
+#else
+# error Endian is unknown
 #endif
 
 #define A 10

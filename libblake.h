@@ -86,6 +86,7 @@ struct libblake_blake2s_params {
 	uint_least64_t node_offset; /* (48-bits) normally 0 */
 	uint_least8_t node_depth; /* normally 0 */
 	uint_least8_t inner_len; /* normally 0 */
+	uint_least8_t _padding[2]; /* to keep .salt and .pepper aligned as uint_least32_t */
 	uint_least8_t salt[8];
 	uint_least8_t pepper[8];
 };
@@ -99,6 +100,7 @@ struct libblake_blake2b_params {
 	uint_least64_t node_offset; /* normally 0 */
 	uint_least8_t node_depth; /* normally 0 */
 	uint_least8_t inner_len; /* normally 0 */
+	uint_least8_t _padding[6]; /* to keep .salt and .pepper aligned as uint_least64_t */
 	uint_least8_t salt[16];
 	uint_least8_t pepper[16];
 };
@@ -127,6 +129,7 @@ struct libblake_blake2xb_params {
 	uint_least32_t xof_len; /* max if not known in advance */
 	uint_least8_t node_depth; /* normally 0 */
 	uint_least8_t inner_len; /* normally 0 */
+	uint_least8_t _padding[2]; /* to keep .salt and .pepper aligned as uint_least32_t */
 	uint_least8_t salt[16];
 	uint_least8_t pepper[16];
 };

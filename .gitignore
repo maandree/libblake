@@ -1,5 +1,6 @@
 *\#*
 *~
+a.out
 *.o
 *.a
 *.lo
@@ -12,4 +13,5 @@
 *.gcov
 *.gcno
 *.gcda
+*.s
 /test

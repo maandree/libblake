@@ -13,13 +13,16 @@ libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data_, size_
 	len -= r;
 
 	state->f[0] = UINT_LEAST64_C(0xFFFFffffFFFFffff);
-	if (last_node)
+	if (UNLIKELY(last_node))
 		state->f[1] = UINT_LEAST64_C(0xFFFFffffFFFFffff);
 
 	memset(&data[len], 0, 128 - len);
 
+	/* This runs so seldom that we are not bothering with trying to optimise
+	 * this since similar code in libblake_blake2b_force_update.c could not
+	 * be optimised */
 	state->t[0] = (state->t[0] + len) & UINT_LEAST64_C(0xFFFFffffFFFFffff);
-	if (state->t[0] < len)
+	if (UNLIKELY(state->t[0] < len))
 		state->t[1] = (state->t[1] + 1) & UINT_LEAST64_C(0xFFFFffffFFFFffff);
 
 	libblake_internal_blake2b_compress(state, data);

@@ -10,7 +10,7 @@ OS = linux
 include mk/$(OS).mk
 
 
-LIB_MAJOR = 1
+LIB_MAJOR = 2
 LIB_MINOR = 0
 LIB_VERSION = $(LIB_MAJOR).$(LIB_MINOR)
 LIB_NAME = blake
