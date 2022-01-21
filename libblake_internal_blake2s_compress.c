@@ -4,6 +4,7 @@
 static uint_least32_t
 decode_uint32_le(const unsigned char *data)
 {
+	/* This is perfectly optimised by the compiler */
 	return (((uint_least32_t)(data[0] & 255)) <<  0) |
 	       (((uint_least32_t)(data[1] & 255)) <<  8) |
 	       (((uint_least32_t)(data[2] & 255)) << 16) |
@@ -13,6 +14,7 @@ decode_uint32_le(const unsigned char *data)
 static uint_least32_t
 rotate_right(uint_least32_t x, int n)
 {
+	/* This is perfectly optimised by the compiler */
 	return ((x >> n) | (x << (32 - n))) & UINT_LEAST32_C(0xFFFFffff);
 }
 

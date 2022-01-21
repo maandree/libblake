@@ -67,14 +67,15 @@ OBJ_BLAKE2 =\
 	libblake_blake2xs_update.o\
 	libblake_internal_blake2b_compress.o\
 	libblake_internal_blake2s_compress.o\
-	libblake_internal_blake2s_output_digest.o\
 	libblake_internal_blake2b_output_digest.o\
+	libblake_internal_blake2s_output_digest.o\
 	libblake_internal_blake2xb_init0.o\
 	libblake_internal_blake2xs_init0.o
 
 OBJ =\
 	libblake_encode_hex.o\
 	libblake_decode_hex.o\
+	libblake_init.o\
 	$(OBJ_BLAKE)\
 	$(OBJ_BLAKE2)
 
@@ -95,6 +96,18 @@ test.o: $(HDR)
 
 .c.lo:
 	$(CC) -fPIC -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
+
+libblake_internal_blake2b_compress_mm128.o: libblake_internal_blake2b_compress_mm128.c $(HDR)
+	$(CC) -c -o $@ $(@:.o=.c) $(CFLAGS) $(CPPFLAGS) $(CFLAGS_MM128)
+
+libblake_internal_blake2b_compress_mm128.lo: libblake_internal_blake2b_compress_mm128.c $(HDR)
+	$(CC) -c -o $@ $(@:.lo=.c) $(CFLAGS) $(CPPFLAGS) $(CFLAGS_MM128)
+
+libblake_internal_blake2b_compress_mm256.o: libblake_internal_blake2b_compress_mm256.c $(HDR)
+	$(CC) -c -o $@ $(@:.o=.c) $(CFLAGS) $(CPPFLAGS) $(CFLAGS_MM256)
+
+libblake_internal_blake2b_compress_mm256.lo: libblake_internal_blake2b_compress_mm256.c $(HDR)
+	$(CC) -c -o $@ $(@:.lo=.c) $(CFLAGS) $(CPPFLAGS) $(CFLAGS_MM256)
 
 test: test.o libblake.a
 	$(CC) -o $@ test.o libblake.a $(LDFLAGS)

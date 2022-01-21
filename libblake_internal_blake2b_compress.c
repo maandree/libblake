@@ -1,9 +1,12 @@
 /* See LICENSE file for copyright and license details. */
 #include "common.h"
 
+/* This code performs suboptimally if compiled with -mavx2 */
+
 static uint_least64_t
 decode_uint64_le(const unsigned char *data)
 {
+	/* This is perfectly optimised by the compiler */
 	return (((uint_least64_t)(data[0] & 255)) <<  0) |
 	       (((uint_least64_t)(data[1] & 255)) <<  8) |
 	       (((uint_least64_t)(data[2] & 255)) << 16) |
@@ -17,6 +20,7 @@ decode_uint64_le(const unsigned char *data)
 static uint_least64_t
 rotate_right(uint_least64_t x, int n)
 {
+	/* This is perfectly optimised by the compiler */
 	return ((x >> n) | (x << (64 - n))) & UINT_LEAST64_C(0xFFFFffffFFFFffff);
 }
 

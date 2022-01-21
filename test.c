@@ -490,6 +490,8 @@ main(void)
 {
 	int failed = 0;
 
+	libblake_init();
+
 	CHECK_HEX(1, 00, 12, 32, 00, 45, 67, 82, 9A, B0, CD, FE, FF, 80, 08, CC, 28);
 	CHECK_HEX(0, 00, 12, 32, 00, 45, 67, 82, 9a, b0, cd, fe, ff, 80, 08, cc, 28);
 

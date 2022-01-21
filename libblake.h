@@ -27,6 +27,21 @@
 # define LIBBLAKE_CONST__
 #endif
 
+#if defined(__STDC_VERSION__)
+# if __STDC_VERSION__ >= 201112L
+#  define LIBBLAKE_ALIGNED__(BYTES) _Alignas(BYTES)
+# endif
+#endif
+#ifndef LIBBLAKE_ALIGNED__
+# if defined(__GNUC__)
+#  define LIBBLAKE_ALIGNED__(BYTES) __attribute__((__aligned__(BYTES)))
+# else
+#  define LIBBLAKE_ALIGNED__(BYTES)
+# endif
+#endif
+
+
+LIBBLAKE_PUBLIC__ void libblake_init(void);
 
 LIBBLAKE_PUBLIC__ void libblake_encode_hex(const void *data, size_t n, char out[/* static n * 2 + 1 */], int uppercase);
 LIBBLAKE_PUBLIC__ size_t libblake_decode_hex(const char *data, size_t n, void *out, int *validp);
@@ -140,12 +155,14 @@ struct libblake_blake2xb_params {
 };
 
 struct libblake_blake2s_state {
+	LIBBLAKE_ALIGNED__(32)
 	uint_least32_t h[8];
 	uint_least32_t t[2];
 	uint_least32_t f[2];
 };
 
 struct libblake_blake2b_state {
+	LIBBLAKE_ALIGNED__(32)
 	uint_least64_t h[8];
 	uint_least64_t t[2];
 	uint_least64_t f[2];

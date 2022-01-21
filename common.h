@@ -77,6 +77,8 @@ HIDDEN void libblake_internal_blakeb_digest(struct libblake_blakeb_state *state,
 
 HIDDEN void libblake_internal_blake2s_compress(struct libblake_blake2s_state *state, const unsigned char *data);
 HIDDEN void libblake_internal_blake2b_compress(struct libblake_blake2b_state *state, const unsigned char *data);
+/* HIDDEN void libblake_internal_blake2b_compress_mm128_init(void); */
+/* HIDDEN void libblake_internal_blake2b_compress_mm256_init(void); */
 
 HIDDEN void libblake_internal_blake2xs_init0(struct libblake_blake2xs_state *state, const struct libblake_blake2xs_params *params);
 HIDDEN void libblake_internal_blake2xb_init0(struct libblake_blake2xb_state *state, const struct libblake_blake2xb_params *params);
