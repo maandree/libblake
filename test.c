@@ -35,7 +35,7 @@ check_hex(int uppercase, const char *hex, const unsigned char *bin, size_t n)
 static const char *
 digest_blake1(int length, const void *msg, size_t msglen, size_t bits)
 {
-	static char hex[sizeof(LIBBLAKE_BLAKE512_OUTPUT_SIZE) * 2 + 1];
+	static char hex[LIBBLAKE_BLAKE512_OUTPUT_SIZE * 2 + 1];
 	unsigned char buf[LIBBLAKE_BLAKE512_OUTPUT_SIZE];
 	size_t req;
 	char *data;
@@ -45,7 +45,7 @@ digest_blake1(int length, const void *msg, size_t msglen, size_t bits)
 		struct libblake_blake##BITS##_state s##BITS;\
 		req = libblake_blake##BITS##_digest_get_required_input_size(msglen, bits, NULL);\
 		data = malloc(req);\
-		memcpy(data, msg, msglen + bits / 8 + !!(bits & 7));\
+		memcpy(data, msg, msglen + (bits + 7) / 8);\
 		libblake_blake##BITS##_init(&s##BITS);\
 		libblake_blake##BITS##_digest(&s##BITS, data, msglen, bits, NULL, buf);\
 		libblake_encode_hex(buf, LIBBLAKE_BLAKE##BITS##_OUTPUT_SIZE, hex, 0);\
