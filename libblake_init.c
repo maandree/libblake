@@ -5,7 +5,7 @@
 #if defined(__GNUC__)
 __attribute__((__constructor__)) /* ignored if statically linked, so this function shall
                                   * by the application, we just use the constructor (init)
-                                  * attribute incase that is forgotten, as it will only
+                                  * attribute in case that is forgotten, as it will only
                                   * improve performance, but the library with function
                                   * perfectly fine even if it's not called */
 #endif
