@@ -15,6 +15,9 @@ libblake_init(void)
 	static volatile int initialised = 0;
 	static volatile atomic_flag spinlock = ATOMIC_FLAG_INIT;
 
+	if (initialised)
+		return;
+
 	while (atomic_flag_test_and_set(&spinlock));
 
 	if (!initialised) {
