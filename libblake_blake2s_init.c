@@ -80,7 +80,7 @@ libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblak
 	}
 
 	if (params->key_len) {
-		state->t[0] = 32;
+		state->t[0] = 64;
 		libblake_internal_blake2s_compress(state, key);
 	}
 }
