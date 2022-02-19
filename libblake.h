@@ -178,7 +178,7 @@ libblake_blake224_init(struct libblake_blake224_state *state) {
 /**
  * Process data for hashing with BLAKE224
  * 
- * The function can process multiples of 64 bytes,
+ * The function can only process multiples of 64 bytes,
  * any data in excess of a 64-byte multiple will be
  * ignored and must be processed when more data is
  * available or using `libblake_blake224_digest`
@@ -207,7 +207,7 @@ LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ size_t
 libblake_blake224_digest_get_required_input_size(size_t len, size_t bits, const char *suffix);
 
 /**
- * Calculate the input a BLAKE224 hash
+ * Calculate the BLAKE224 hash of the input data
  * 
  * The `state` parameter must be initialised using the
  * `libblake_blake224_init` function, after which, but
@@ -264,7 +264,7 @@ libblake_blake256_init(struct libblake_blake256_state *state) {
 /**
  * Process data for hashing with BLAKE256
  * 
- * The function can process multiples of 64 bytes,
+ * The function can only process multiples of 64 bytes,
  * any data in excess of a 64-byte multiple will be
  * ignored and must be processed when more data is
  * available or using `libblake_blake256_digest`
@@ -295,7 +295,7 @@ libblake_blake256_digest_get_required_input_size(size_t len, size_t bits, const 
 }
 
 /**
- * Calculate the input a BLAKE256 hash
+ * Calculate the BLAKE256 hash of the input data
  * 
  * The `state` parameter must be initialised using the
  * `libblake_blake256_init` function, after which, but
@@ -352,7 +352,7 @@ libblake_blake384_init(struct libblake_blake384_state *state) {
 /**
  * Process data for hashing with BLAKE384
  * 
- * The function can process multiples of 128 bytes,
+ * The function can only process multiples of 128 bytes,
  * any data in excess of a 128-byte multiple will
  * be ignored and must be processed when more data
  * is available or using `libblake_blake384_digest`
@@ -381,7 +381,7 @@ LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ size_t
 libblake_blake384_digest_get_required_input_size(size_t len, size_t bits, const char *suffix);
 
 /**
- * Calculate the input a BLAKE384 hash
+ * Calculate the BLAKE384 hash of the input data
  * 
  * The `state` parameter must be initialised using the
  * `libblake_blake384_init` function, after which, but
@@ -438,7 +438,7 @@ libblake_blake512_init(struct libblake_blake512_state *state) {
 /**
  * Process data for hashing with BLAKE512
  * 
- * The function can process multiples of 128 bytes,
+ * The function can only process multiples of 128 bytes,
  * any data in excess of a 128-byte multiple will
  * be ignored and must be processed when more data
  * is available or using `libblake_blake512_digest`
@@ -469,7 +469,7 @@ libblake_blake512_digest_get_required_input_size(size_t len, size_t bits, const 
 }
 
 /**
- * Calculate the input a BLAKE512 hash
+ * Calculate the BLAKE512 hash of the input data
  * 
  * The `state` parameter must be initialised using the
  * `libblake_blake512_init` function, after which, but
@@ -509,16 +509,136 @@ libblake_blake512_digest(struct libblake_blake512_state *state, void *data, size
  * BLAKE2s hashing parameters
  */
 struct libblake_blake2s_params {
-	uint_least8_t digest_len; /* in bytes, [1, 32] */
-	uint_least8_t key_len; /* in bytes, [0, 32] */
-	uint_least8_t fanout; /* normally 1 */
-	uint_least8_t depth; /* normally 1 */
-	uint_least32_t leaf_len; /* normally 0 */
-	uint_least64_t node_offset; /* (48-bits) normally 0 */
-	uint_least8_t node_depth; /* normally 0 */
-	uint_least8_t inner_len; /* normally 0 */
+
+	/**
+	 * The size of the output hash, in bytes
+	 * (in its raw binary encoding, i.e. before
+	 * encoded to hexadecimal or other text
+	 * encoding)
+	 * 
+	 * This value shall be between within [1, 32]
+	 */
+	uint_least8_t digest_len;
+
+	/**
+	 * The size of the key, in bytes
+	 * 
+	 * This value shall be 0 for unkeyed mode
+	 * and within [1, 32] for keyed mode
+	 * 
+	 * Keyed mode is used for MAC and PRF
+	 */
+	uint_least8_t key_len;
+
+	/**
+	 * The fan-out on each non-root node
+	 * in tree hashing, 0 for unlimited
+	 * 
+	 * Set to 1 if not using tree-hashing
+	 */
+	uint_least8_t fanout;
+
+	/**
+	 * The maximum depth of the hashing tree,
+	 * 255 for unlimited, 0 is forbidden
+	 * 
+	 * It is recommended that 2 is used
+	 * (the value will affect the resulting
+	 * hashing) if the fan-out is unlimited
+	 * 
+	 * Set to 1 if not using tree-hashing
+	 */
+	uint_least8_t depth;
+
+	/**
+	 * The number of bytes from the input to
+	 * process at each leaf in the hashing
+	 * tree; 0 if unlimited
+	 * 
+	 * Set to 0 if not using tree-hashing
+	 */
+	uint_least32_t leaf_len;
+
+	/**
+	 * The offset of the current node in the
+	 * hashing tree
+	 * 
+	 * For leaf nodes, this is the position
+	 * in the input, that is being processed
+	 * by the current node in the hashing
+	 * tree, divided by `.leaf_len`, or 0 if
+	 * `.leaf_len` is 0. For non-leaf nodes
+	 * this value is further divided by the
+	 * fan-out once per level removed from
+	 * the leaf nodes.
+	 * 
+	 * This value is limited to 48 bits.
+	 * 
+	 * Set to 0 if not using tree-hashing
+	 */
+	uint_least64_t node_offset;
+
+	/**
+	 * The depth of the current node in the
+	 * hashing tree
+	 * 
+	 * This value is 0 for the root node,
+	 * and plus 1 per level down the tree
+	 * 
+	 * Set to 0 if not using tree-hashing
+	 */
+	uint_least8_t node_depth;
+
+	/**
+	 * Inner hash (the intermediate hash
+	 * produced at each node except the
+	 * root node) length, in bytes
+	 * 
+	 * This value shall be between within
+	 * [1, 32] for tree-hashing
+	 * 
+	 * Set to 0 if not using tree-hashing
+	 */
+	uint_least8_t inner_len;
+
 	uint_least8_t _padding[2]; /* to keep .salt and .pepper aligned as uint_least32_t */
+
+	/**
+	 * 8-byte salt used to make the hash
+	 * unique even if the input is not unique
+	 * 
+	 * These is normally used in password hashing
+	 * schemes to avoid duplicate hashing where
+	 * two user's have the same password, and,
+	 * more importantly, to prevent rainbow-table
+	 * attacks
+	 * 
+	 * This is normally not used when producing
+	 * checksum for files, and should normally
+	 * be all NUL bytes in such cases
+	 */
 	uint_least8_t salt[8];
+
+	/**
+	 * 8-byte pepper ("personalisation") used to
+	 * make the hash application-unique
+	 * 
+	 * These is normally used (in the rare cases
+	 * when it is used) in password hashing
+	 * schemes as an extra level of security
+	 * (through obscurity; something that is OK
+	 * only when it is an _extra_ level of
+	 * security). A pepper must not be stored
+	 * in a password database; it should be
+	 * compiled into the application that
+	 * calculates the hash, to avoid it being
+	 * accessed by a hacker when he gets access
+	 * to the password table.
+	 * 
+	 * This is normally not used when producing
+	 * checksum for files, and should normally
+	 * be all NUL bytes in such cases
+	 */
 	uint_least8_t pepper[8];
 };
 
@@ -526,16 +646,134 @@ struct libblake_blake2s_params {
  * BLAKE2b hashing parameters
  */
 struct libblake_blake2b_params {
-	uint_least8_t digest_len; /* in bytes, [1, 64] */
-	uint_least8_t key_len; /* in bytes, [0, 64] */
-	uint_least8_t fanout; /* normally 1 */
-	uint_least8_t depth; /* normally 1 */
-	uint_least32_t leaf_len; /* normally 0 */
-	uint_least64_t node_offset; /* normally 0 */
-	uint_least8_t node_depth; /* normally 0 */
-	uint_least8_t inner_len; /* normally 0 */
+
+	/**
+	 * The size of the output hash, in bytes
+	 * (in its raw binary encoding, i.e. before
+	 * encoded to hexadecimal or other text
+	 * encoding)
+	 * 
+	 * This value shall be between within [1, 64]
+	 */
+	uint_least8_t digest_len;
+
+	/**
+	 * The size of the key, in bytes
+	 * 
+	 * This value shall be 0 for unkeyed mode
+	 * and within [1, 64] for keyed mode
+	 * 
+	 * Keyed mode is used for MAC and PRF
+	 */
+	uint_least8_t key_len;
+
+	/**
+	 * The fan-out on each non-root node
+	 * in tree hashing
+	 * 
+	 * Set to 1 if not using tree-hashing
+	 */
+	uint_least8_t fanout;
+
+	/**
+	 * The maximum depth of the hashing tree,
+	 * 255 for unlimited, 0 is forbidden
+	 * 
+	 * It is recommended that 2 is used
+	 * (the value will affect the resulting
+	 * hashing) if the fan-out is unlimited
+	 * 
+	 * Set to 1 if not using tree-hashing
+	 */
+	uint_least8_t depth;
+
+	/**
+	 * The number of bytes from the input to
+	 * process at each leaf in the hashing
+	 * tree; 0 if unlimited
+	 * 
+	 * Set to 0 if not using tree-hashing
+	 */
+	uint_least32_t leaf_len;
+
+	/**
+	 * The offset of the current node in the
+	 * hashing tree
+	 * 
+	 * For leaf nodes, this is the position
+	 * in the input, that is being processed
+	 * by the current node in the hashing
+	 * tree, divided by `.leaf_len`, or 0 if
+	 * `.leaf_len` is 0. For non-leaf nodes
+	 * this value is further divided by the
+	 * fan-out once per level removed from
+	 * the leaf nodes.
+	 * 
+	 * Set to 0 if not using tree-hashing
+	 */
+	uint_least64_t node_offset;
+
+	/**
+	 * The depth of the current node in the
+	 * hashing tree
+	 * 
+	 * This value is 0 for the root node,
+	 * and plus 1 per level down the tree
+	 * 
+	 * Set to 0 if not using tree-hashing
+	 */
+	uint_least8_t node_depth;
+
+	/**
+	 * Inner hash (the intermediate hash
+	 * produced at each node except the
+	 * root node) length, in bytes
+	 * 
+	 * This value shall be between within
+	 * [1, 32] for tree-hashing
+	 * 
+	 * Set to 0 if not using tree-hashing
+	 */
+	uint_least8_t inner_len;
+
 	uint_least8_t _padding[6]; /* to keep .salt and .pepper aligned as uint_least64_t */
+
+	/**
+	 * 8-byte salt used to make the hash
+	 * unique even if the input is not unique
+	 * 
+	 * These is normally used in password hashing
+	 * schemes to avoid duplicate hashing where
+	 * two user's have the same password, and,
+	 * more importantly, to prevent rainbow-table
+	 * attacks
+	 * 
+	 * This is normally not used when producing
+	 * checksum for files, and should normally
+	 * be all NUL bytes in such cases
+	 */
 	uint_least8_t salt[16];
+
+	/**
+	 * 16-byte pepper ("personalisation") used to
+	 * make the hash application-unique
+	 * 
+	 * These is normally used (in the rare cases
+	 * when it is used) in password hashing
+	 * schemes as an extra level of security
+	 * (through obscurity; something that is OK
+	 * only when it is an _extra_ level of
+	 * security). A pepper must not be stored
+	 * in a password database; it should be
+	 * compiled into the application that
+	 * calculates the hash, to avoid it being
+	 * accessed by a hacker when he gets access
+	 * to the password table.
+	 * 
+	 * This is normally not used when producing
+	 * checksum for files, and should normally
+	 * be all NUL bytes in such cases
+	 */
 	uint_least8_t pepper[16];
 };
 
@@ -565,38 +803,204 @@ struct libblake_blake2b_state {
 
 
 
+/**
+ * Initialise a state for hashing with BLAKE2s
+ * 
+ * @param  state   The state to initialise
+ * @param  params  Hashing parameters
+ * @param  key     Key to use. The key's length is set in
+ *                 `params->key_len`, but unless this value
+ *                 is 0 (hash in unkeyed mode), this buffer
+ *                 must be padded with NUL bytes, to the end,
+ *                 such that it's length is at least 64 bytes.
+ *                 (The maximum allowed key length is 32, the
+ *                 buffer's size shall be twice this.) The
+ *                 key is used for MAC and PRF.
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblake_blake2s_params *params,
                       const unsigned char *key /* append null bytes until 64 bytes; if key is used */);
 
+/**
+ * Process data for hashing with BLAKE2s
+ * 
+ * The function can only process multiples of 64 bytes,
+ * but cannot process that last chunk of 64 bytes
+ * unless a non-multiple of 64 bytes is input to the
+ * function; any excess data will be ignored and must
+ * be processed when more data is available or using
+ * `libblake_blake2s_digest` when the end of the
+ * input has been reached
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ size_t
 libblake_blake2s_update(struct libblake_blake2s_state *state, const void *data, size_t len);
 
+/**
+ * Process data for hashing with BLAKE2s
+ * 
+ * The function can only process multiples of 64 bytes,
+ * any excess data will be ignored and must be
+ * processed when more data is available or using
+ * `libblake_blake2s_digest` when the end of the input
+ * has been reached
+ * 
+ * Unlike `libblake_blake2s_update`, this function
+ * will all input data if `len` is a multiple of
+ * 64, however the application must make sure that
+ * there is more data to process
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ size_t
 libblake_blake2s_force_update(struct libblake_blake2s_state *state, const void *data, size_t len);
 
+/**
+ * Get the required allocation size of the
+ * input buffer for `libblake_blake2s_digest`
+ * 
+ * @param   len  The number of input bytes
+ * @return       The number bytes required for the input buffer
+ */
 LIBBLAKE_PUBLIC__ LIBBLAKE_CONST__ size_t
 libblake_blake2s_digest_get_required_input_size(size_t len);
 
+/**
+ * Calculate the BLAKE2s hash of the input data
+ * 
+ * The `state` parameter must be initialised using the
+ * `libblake_blake2s_init` function, after which, but
+ * before this function is called, `libblake_blake2s_update`
+ * and `libblake_blake2s_force_update` can be used to
+ * process data before this function is called. Already
+ * processed data shall not be input to this function.
+ * 
+ * @param  state       The state of the hash function
+ * @param  data        Data to process; the function will write addition data to
+ *                     the end, therefore the size of this buffer must be at least
+ *                     `libblake_blake2s_digest_get_required_input_size(len)`
+ *                     bytes large
+ * @param  len         The number of input bytes
+ * @param  last_node   Shall be non-0 the last node at each level in the
+ *                     hashing tree, include the root node, however, it
+ *                     shall be 0 if not using tree-hashing
+ * @param  output_len  The number of bytes to write to `output_len`; this
+ *                     shall be the value `params->digest_len` had when
+ *                     `libblake_blake2s_init` was called, where `params`
+ *                     is the second argument given to `libblake_blake2s_init`
+ * @param  output      Output buffer for the hash, which will be stored in raw
+ *                     binary representation; the size of this buffer must be
+ *                     at least `output_len` bytes
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake2s_digest(struct libblake_blake2s_state *state, void *data, size_t len, int last_node /* normally 0 */,
                         size_t output_len, unsigned char output[static output_len]);
 
 
 
+/**
+ * Initialise a state for hashing with BLAKE2b
+ * 
+ * @param  state   The state to initialise
+ * @param  params  Hashing parameters
+ * @param  key     Key to use. The key's length is set in
+ *                 `params->key_len`, but unless this value
+ *                 is 0 (hash in unkeyed mode), this buffer
+ *                 must be padded with NUL bytes, to the end,
+ *                 such that it's length is at least 128 bytes.
+ *                 (The maximum allowed key length is 64, the
+ *                 buffer's size shall be twice this.) The
+ *                 key is used for MAC and PRF.
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake2b_init(struct libblake_blake2b_state *state, const struct libblake_blake2b_params *params,
                       const unsigned char *key /* append null bytes until 128 bytes; if key is used */);
 
+/**
+ * Process data for hashing with BLAKE2b
+ * 
+ * The function can only process multiples of 128 bytes,
+ * but cannot process that last chunk of 128 bytes
+ * unless a non-multiple of 128 bytes is input to the
+ * function; any excess data will be ignored and must
+ * be processed when more data is available or using
+ * `libblake_blake2b_digest` when the end of the
+ * input has been reached
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ size_t
 libblake_blake2b_update(struct libblake_blake2b_state *state, const void *data, size_t len);
 
+/**
+ * Process data for hashing with BLAKE2b
+ * 
+ * The function can only process multiples of 128 bytes,
+ * any excess data will be ignored and must be
+ * processed when more data is available or using
+ * `libblake_blake2s_digest` when the end of the input
+ * has been reached
+ * 
+ * Unlike `libblake_blake2b_update`, this function
+ * will all input data if `len` is a multiple of
+ * 128, however the application must make sure that
+ * there is more data to process
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ size_t
 libblake_blake2b_force_update(struct libblake_blake2b_state *state, const void *data, size_t len);
 
+/**
+ * Get the required allocation size of the
+ * input buffer for `libblake_blake2b_digest`
+ * 
+ * @param   len  The number of input bytes
+ * @return       The number bytes required for the input buffer
+ */
 LIBBLAKE_PUBLIC__ LIBBLAKE_CONST__ size_t
 libblake_blake2b_digest_get_required_input_size(size_t len);
 
+/**
+ * Calculate the BLAKE2b hash of the input data
+ * 
+ * The `state` parameter must be initialised using the
+ * `libblake_blake2b_init` function, after which, but
+ * before this function is called, `libblake_blake2b_update`
+ * and `libblake_blake2b_force_update` can be used to
+ * process data before this function is called. Already
+ * processed data shall not be input to this function.
+ * 
+ * @param  state       The state of the hash function
+ * @param  data        Data to process; the function will write addition data to
+ *                     the end, therefore the size of this buffer must be at least
+ *                     `libblake_blake2b_digest_get_required_input_size(len)`
+ *                     bytes large
+ * @param  len         The number of input bytes
+ * @param  last_node   Shall be non-0 the last node at each level in the
+ *                     hashing tree, include the root node, however, it
+ *                     shall be 0 if not using tree-hashing
+ * @param  output_len  The number of bytes to write to `output_len`; this
+ *                     shall be the value `params->digest_len` had when
+ *                     `libblake_blake2b_init` was called, where `params`
+ *                     is the second argument given to `libblake_blake2b_init`
+ * @param  output      Output buffer for the hash, which will be stored in raw
+ *                     binary representation; the size of this buffer must be
+ *                     at least `output_len` bytes
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data, size_t len, int last_node /* normally 0 */,
                         size_t output_len, unsigned char output[static output_len]);
