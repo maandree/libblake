@@ -2,7 +2,7 @@
 #include "common.h"
 
 void
-libblake_blake512_init2(struct libblake_blake512_state *state, uint_least8_t salt[32])
+libblake_blake512_init2(struct libblake_blake512_state *state, const uint_least8_t salt[32])
 {
 	size_t i;
 	state->b.h[0] = UINT_LEAST64_C(0x6A09E667F3BCC908);

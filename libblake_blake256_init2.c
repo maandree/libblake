@@ -2,7 +2,7 @@
 #include "common.h"
 
 void
-libblake_blake256_init2(struct libblake_blake256_state *state, uint_least8_t salt[16])
+libblake_blake256_init2(struct libblake_blake256_state *state, const uint_least8_t salt[16])
 {
 	size_t i;
 	state->s.h[0] = UINT_LEAST32_C(0x6A09E667);
