@@ -127,6 +127,7 @@ install: libblake.a libblake.$(LIBEXT)
 	mkdir -p -- "$(DESTDIR)$(PREFIX)/include"
 	cp -- libblake.a "$(DESTDIR)$(PREFIX)/lib/"
 	cp -- libblake.$(LIBEXT) "$(DESTDIR)$(PREFIX)/lib/libblake.$(LIBMINOREXT)"
+	$(FIX_INSTALL_NAME) "$(DESTDIR)$(PREFIX)/lib/libblake.$(LIBMINOREXT)"
 	ln -sf -- libblake.$(LIBMINOREXT) "$(DESTDIR)$(PREFIX)/lib/libblake.$(LIBMAJOREXT)"
 	ln -sf -- libblake.$(LIBMAJOREXT) "$(DESTDIR)$(PREFIX)/lib/libblake.$(LIBEXT)"
 	cp -- libblake.h "$(DESTDIR)$(PREFIX)/include/"
