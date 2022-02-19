@@ -19,7 +19,7 @@ libblake_blake2xs_init(struct libblake_blake2xs_state *state, const struct libbl
 	memset(&state->intermediate, 0, sizeof(state->intermediate));
 
 	if (params->key_len) {
-		state->b2s.t[0] = 32;
+		state->b2s.t[0] = 64;
 		libblake_internal_blake2s_compress(&state->b2s, key);
 	}
 }
