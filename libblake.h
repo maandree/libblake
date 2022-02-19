@@ -333,7 +333,7 @@ libblake_blake256_digest(struct libblake_blake256_state *state, void *data, size
  * Initialise a state for hashing with BLAKE384
  * 
  * @param  state  The state to initialise
- * @param  salt   16-byte salt to use, or `NULL` for an all-zeroes salt
+ * @param  salt   32-byte salt to use, or `NULL` for an all-zeroes salt
  */
 LIBBLAKE_PUBLIC__ void
 libblake_blake384_init2(struct libblake_blake384_state *state, const uint_least8_t salt[32]);
@@ -419,7 +419,7 @@ libblake_blake384_digest(struct libblake_blake384_state *state, void *data, size
  * Initialise a state for hashing with BLAKE512
  * 
  * @param  state  The state to initialise
- * @param  salt   16-byte salt to use, or `NULL` for an all-zeroes salt
+ * @param  salt   32-byte salt to use, or `NULL` for an all-zeroes salt
  */
 LIBBLAKE_PUBLIC__ void
 libblake_blake512_init2(struct libblake_blake512_state *state, const uint_least8_t salt[32]);
