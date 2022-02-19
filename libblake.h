@@ -155,80 +155,348 @@ struct libblake_blake512_state { struct libblake_blakeb_state b; };
 
 
 
+/**
+ * Initialise a state for hashing with BLAKE224
+ * 
+ * @param  state  The state to initialise
+ * @param  salt   16-byte salt to use, or `NULL` for an all-zeroes salt
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake224_init2(struct libblake_blake224_state *state, const uint_least8_t salt[16]);
 
+/**
+ * Initialise a state for hashing with BLAKE224
+ * and an all-zeroes salt
+ * 
+ * @param  state  The state to initialise
+ */
 LIBBLAKE_PUBLIC__ inline void
 libblake_blake224_init(struct libblake_blake224_state *state) {
 	libblake_blake224_init2(state, NULL);
 }
 
+/**
+ * Process data for hashing with BLAKE224
+ * 
+ * The function can process multiples of 64 bytes,
+ * any data in excess of a 64-byte multiple will be
+ * ignored and must be processed when more data is
+ * available or using `libblake_blake224_digest`
+ * when the end of the input has been reached
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ size_t
 libblake_blake224_update(struct libblake_blake224_state *state, const void *data, size_t len);
 
+/**
+ * Get the required allocation size of the
+ * input buffer for `libblake_blake224_digest`
+ * 
+ * @param   len     The number of input whole bytes
+ * @param   bits    The number of input bits after the last whole bytes
+ *                  (may actually be greater than 7)
+ * @param   suffix  String of '0's and '1's of addition bits to add to the
+ *                  end of the input, or `NULL` (or the empty string) if none
+ * @return          The number bytes required for the input buffer
+ */
 LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ size_t
 libblake_blake224_digest_get_required_input_size(size_t len, size_t bits, const char *suffix);
 
+/**
+ * Calculate the input a BLAKE224 hash
+ * 
+ * The `state` parameter must be initialised using the
+ * `libblake_blake224_init` function, after which, but
+ * before this function is called, `libblake_blake224_update`
+ * can be used to process data before this function is
+ * called. Already processed data shall not be input to
+ * this function.
+ * 
+ * @param  state   The state of the hash function
+ * @param  data    Data to process; the function will write addition data to
+ *                 the end, therefore the size of this buffer must be at least
+ *                 `libblake_blake224_digest_get_required_input_size(len, bits, suffix)`
+ *                 bytes large
+ * @param  len     The number of input whole bytes
+ * @param  bits    The number of input bits after the last whole bytes
+ *                 (may actually be greater than 7); these bits shall
+ *                 be stored in `data[len]`'s (addition bytes will be used
+ *                 if `bits > 8`) lower bits
+ * @param  suffix  String of '0's and '1's of addition bits to add to the
+ *                 end of the input, or `NULL` (or the empty string) if none;
+ *                 the first character corresponds to the lowest indexed
+ *                 additional bit, and the last character corresponds to
+ *                 the highest indexed additional bit
+ * @param  output  Output buffer for the hash, which will be stored in raw
+ *                 binary representation; the size of this buffer must be
+ *                 at least `LIBBLAKE_BLAKE224_OUTPUT_SIZE` bytes
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake224_digest(struct libblake_blake224_state *state, void *data, size_t len, size_t bits,
                          const char *suffix, unsigned char output[static LIBBLAKE_BLAKE224_OUTPUT_SIZE]);
 
 
 
+/**
+ * Initialise a state for hashing with BLAKE256
+ * 
+ * @param  state  The state to initialise
+ * @param  salt   16-byte salt to use, or `NULL` for an all-zeroes salt
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake256_init2(struct libblake_blake256_state *state, const uint_least8_t salt[16]);
 
+/**
+ * Initialise a state for hashing with BLAKE256
+ * and an all-zeroes salt
+ * 
+ * @param  state  The state to initialise
+ */
 LIBBLAKE_PUBLIC__ inline void
 libblake_blake256_init(struct libblake_blake256_state *state) {
 	libblake_blake256_init2(state, NULL);
 }
 
+/**
+ * Process data for hashing with BLAKE256
+ * 
+ * The function can process multiples of 64 bytes,
+ * any data in excess of a 64-byte multiple will be
+ * ignored and must be processed when more data is
+ * available or using `libblake_blake256_digest`
+ * when the end of the input has been reached
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ size_t
 libblake_blake256_update(struct libblake_blake256_state *state, const void *data, size_t len);
 
-LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ size_t
-libblake_blake256_digest_get_required_input_size(size_t len, size_t bits, const char *suffix);
+/**
+ * Get the required allocation size of the
+ * input buffer for `libblake_blake256_digest`
+ * 
+ * @param   len     The number of input whole bytes
+ * @param   bits    The number of input bits after the last whole bytes
+ *                  (may actually be greater than 7)
+ * @param   suffix  String of '0's and '1's of addition bits to add to the
+ *                  end of the input, or `NULL` (or the empty string) if none
+ * @return          The number bytes required for the input buffer
+ */
+LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ inline size_t
+libblake_blake256_digest_get_required_input_size(size_t len, size_t bits, const char *suffix) {
+	return libblake_blake224_digest_get_required_input_size(len, bits, suffix);
+}
 
+/**
+ * Calculate the input a BLAKE256 hash
+ * 
+ * The `state` parameter must be initialised using the
+ * `libblake_blake256_init` function, after which, but
+ * before this function is called, `libblake_blake256_update`
+ * can be used to process data before this function is
+ * called. Already processed data shall not be input to
+ * this function.
+ * 
+ * @param  state   The state of the hash function
+ * @param  data    Data to process; the function will write addition data to
+ *                 the end, therefore the size of this buffer must be at least
+ *                 `libblake_blake256_digest_get_required_input_size(len, bits, suffix)`
+ *                 bytes large
+ * @param  len     The number of input whole bytes
+ * @param  bits    The number of input bits after the last whole bytes
+ *                 (may actually be greater than 7); these bits shall
+ *                 be stored in `data[len]`'s (addition bytes will be used
+ *                 if `bits > 8`) lower bits
+ * @param  suffix  String of '0's and '1's of addition bits to add to the
+ *                 end of the input, or `NULL` (or the empty string) if none;
+ *                 the first character corresponds to the lowest indexed
+ *                 additional bit, and the last character corresponds to
+ *                 the highest indexed additional bit
+ * @param  output  Output buffer for the hash, which will be stored in raw
+ *                 binary representation; the size of this buffer must be
+ *                 at least `LIBBLAKE_BLAKE256_OUTPUT_SIZE` bytes
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake256_digest(struct libblake_blake256_state *state, void *data, size_t len, size_t bits,
                          const char *suffix, unsigned char output[static LIBBLAKE_BLAKE256_OUTPUT_SIZE]);
 
 
 
+/**
+ * Initialise a state for hashing with BLAKE384
+ * 
+ * @param  state  The state to initialise
+ * @param  salt   16-byte salt to use, or `NULL` for an all-zeroes salt
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake384_init2(struct libblake_blake384_state *state, const uint_least8_t salt[32]);
 
+/**
+ * Initialise a state for hashing with BLAKE384
+ * and an all-zeroes salt
+ * 
+ * @param  state  The state to initialise
+ */
 LIBBLAKE_PUBLIC__ inline void
 libblake_blake384_init(struct libblake_blake384_state *state) {
 	libblake_blake384_init2(state, NULL);
 }
 
+/**
+ * Process data for hashing with BLAKE384
+ * 
+ * The function can process multiples of 128 bytes,
+ * any data in excess of a 128-byte multiple will
+ * be ignored and must be processed when more data
+ * is available or using `libblake_blake384_digest`
+ * when the end of the input has been reached
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ size_t
 libblake_blake384_update(struct libblake_blake384_state *state, const void *data, size_t len);
 
+/**
+ * Get the required allocation size of the
+ * input buffer for `libblake_blake384_digest`
+ * 
+ * @param   len     The number of input whole bytes
+ * @param   bits    The number of input bits after the last whole bytes
+ *                  (may actually be greater than 7)
+ * @param   suffix  String of '0's and '1's of addition bits to add to the
+ *                  end of the input, or `NULL` (or the empty string) if none
+ * @return          The number bytes required for the input buffer
+ */
 LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ size_t
 libblake_blake384_digest_get_required_input_size(size_t len, size_t bits, const char *suffix);
 
+/**
+ * Calculate the input a BLAKE384 hash
+ * 
+ * The `state` parameter must be initialised using the
+ * `libblake_blake384_init` function, after which, but
+ * before this function is called, `libblake_blake384_update`
+ * can be used to process data before this function is
+ * called. Already processed data shall not be input to
+ * this function.
+ * 
+ * @param  state   The state of the hash function
+ * @param  data    Data to process; the function will write addition data to
+ *                 the end, therefore the size of this buffer must be at least
+ *                 `libblake_blake384_digest_get_required_input_size(len, bits, suffix)`
+ *                 bytes large
+ * @param  len     The number of input whole bytes
+ * @param  bits    The number of input bits after the last whole bytes
+ *                 (may actually be greater than 7); these bits shall
+ *                 be stored in `data[len]`'s (addition bytes will be used
+ *                 if `bits > 8`) lower bits
+ * @param  suffix  String of '0's and '1's of addition bits to add to the
+ *                 end of the input, or `NULL` (or the empty string) if none;
+ *                 the first character corresponds to the lowest indexed
+ *                 additional bit, and the last character corresponds to
+ *                 the highest indexed additional bit
+ * @param  output  Output buffer for the hash, which will be stored in raw
+ *                 binary representation; the size of this buffer must be
+ *                 at least `LIBBLAKE_BLAKE384_OUTPUT_SIZE` bytes
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake384_digest(struct libblake_blake384_state *state, void *data, size_t len, size_t bits,
                          const char *suffix, unsigned char output[static LIBBLAKE_BLAKE384_OUTPUT_SIZE]);
 
 
 
+/**
+ * Initialise a state for hashing with BLAKE512
+ * 
+ * @param  state  The state to initialise
+ * @param  salt   16-byte salt to use, or `NULL` for an all-zeroes salt
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake512_init2(struct libblake_blake512_state *state, const uint_least8_t salt[32]);
 
+/**
+ * Initialise a state for hashing with BLAKE512
+ * and an all-zeroes salt
+ * 
+ * @param  state  The state to initialise
+ */
 LIBBLAKE_PUBLIC__ inline void
 libblake_blake512_init(struct libblake_blake512_state *state) {
 	libblake_blake512_init2(state, NULL);
 }
 
+/**
+ * Process data for hashing with BLAKE512
+ * 
+ * The function can process multiples of 128 bytes,
+ * any data in excess of a 128-byte multiple will
+ * be ignored and must be processed when more data
+ * is available or using `libblake_blake512_digest`
+ * when the end of the input has been reached
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ size_t
 libblake_blake512_update(struct libblake_blake512_state *state, const void *data, size_t len);
 
-LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ size_t
-libblake_blake512_digest_get_required_input_size(size_t len, size_t bits, const char *suffix);
+/**
+ * Get the required allocation size of the
+ * input buffer for `libblake_blake512_digest`
+ * 
+ * @param   len     The number of input whole bytes
+ * @param   bits    The number of input bits after the last whole bytes
+ *                  (may actually be greater than 7)
+ * @param   suffix  String of '0's and '1's of addition bits to add to the
+ *                  end of the input, or `NULL` (or the empty string) if none
+ * @return          The number bytes required for the input buffer
+ */
+LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ inline size_t
+libblake_blake512_digest_get_required_input_size(size_t len, size_t bits, const char *suffix) {
+	return libblake_blake384_digest_get_required_input_size(len, bits, suffix);
+}
 
+/**
+ * Calculate the input a BLAKE512 hash
+ * 
+ * The `state` parameter must be initialised using the
+ * `libblake_blake512_init` function, after which, but
+ * before this function is called, `libblake_blake512_update`
+ * can be used to process data before this function is
+ * called. Already processed data shall not be input to
+ * this function.
+ * 
+ * @param  state   The state of the hash function
+ * @param  data    Data to process; the function will write addition data to
+ *                 the end, therefore the size of this buffer must be at least
+ *                 `libblake_blake512_digest_get_required_input_size(len, bits, suffix)`
+ *                 bytes large
+ * @param  len     The number of input whole bytes
+ * @param  bits    The number of input bits after the last whole bytes
+ *                 (may actually be greater than 7); these bits shall
+ *                 be stored in `data[len]`'s (addition bytes will be used
+ *                 if `bits > 8`) lower bits
+ * @param  suffix  String of '0's and '1's of addition bits to add to the
+ *                 end of the input, or `NULL` (or the empty string) if none;
+ *                 the first character corresponds to the lowest indexed
+ *                 additional bit, and the last character corresponds to
+ *                 the highest indexed additional bit
+ * @param  output  Output buffer for the hash, which will be stored in raw
+ *                 binary representation; the size of this buffer must be
+ *                 at least `LIBBLAKE_BLAKE512_OUTPUT_SIZE` bytes
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake512_digest(struct libblake_blake512_state *state, void *data, size_t len, size_t bits,
                          const char *suffix, unsigned char output[static LIBBLAKE_BLAKE512_OUTPUT_SIZE]);
