@@ -16,6 +16,11 @@ LIB_VERSION = $(LIB_MAJOR).$(LIB_MINOR)
 LIB_NAME = blake
 
 
+OBJ_COMMON =\
+	libblake_encode_hex.o\
+	libblake_decode_hex.o\
+	libblake_init.o
+
 OBJ_BLAKE =\
 	libblake_blake224_digest.o\
 	libblake_blake224_digest_get_required_input_size.o\
@@ -73,15 +78,18 @@ OBJ_BLAKE2 =\
 	libblake_internal_blake2xs_init0.o
 
 OBJ =\
-	libblake_encode_hex.o\
-	libblake_decode_hex.o\
-	libblake_init.o\
+	$(OBJ_COMMON)\
 	$(OBJ_BLAKE)\
 	$(OBJ_BLAKE2)
 
 HDR =\
 	libblake.h\
 	common.h
+
+SRC =\
+	$(OBJ:.o=.c)\
+	$(HDR)\
+	test.c
 
 # Known answers tests
 KAT_FILES =\

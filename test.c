@@ -27,11 +27,11 @@ check_hex(int uppercase, const char *hex, const unsigned char *bin, size_t n)
 	buf_hex[2 * n] = 1;
 	libblake_encode_hex(bin, n, buf_hex, uppercase);
 	if (buf_hex[2 * n] || strcmp(buf_hex, hex))
-		ERROR("libblake_encode_hex with uppercase=%i failed\n", uppercase);
+		ERROR("libblake_encode_hex with uppercase=%i failed\n", uppercase); /* $covered$ */
 	if (libblake_decode_hex(hex, SIZE_MAX, NULL, &valid) != n || !valid ||
 	    libblake_decode_hex(hex, SIZE_MAX, buf_bin, &valid) != n || !valid ||
 	    memcmp(buf_bin, bin, n))
-		ERROR("libblake_decode_hex failed\n");
+		ERROR("libblake_decode_hex failed\n"); /* $covered$ */
 }
 
 static const char *
@@ -63,7 +63,7 @@ digest_blake1(int length, const void *msg, size_t msglen, size_t bits)
 	else if (length == 512)
 		DIGEST(512);
 	else
-		abort();
+		abort(); /* $covered$ */
 
 #undef DIGEST
 
@@ -101,6 +101,7 @@ check_blake1_(int length, const char *dispmsg, const void *msg, size_t msglen, s
 	msglen -= bits > 0;
 	result = digest_blake1(length, msg, msglen, bits);
 	if (strcasecmp(result, expected)) {
+		/* $covered{$ */
 		fprintf(stderr, "BLAKE-%i failed for %s:\n", length, dispmsg);
 		if (bits)
 			fprintf(stderr, "\tLength:   %zu bytes and %zu bits\n", msglen, bits);
@@ -108,6 +109,7 @@ check_blake1_(int length, const char *dispmsg, const void *msg, size_t msglen, s
 		fprintf(stderr, "\tExpected: %s\n", expected);
 		fprintf(stderr, "\n");
 		return 0;
+		/* $covered}$ */
 	}
 	return 1;
 }
@@ -356,24 +358,24 @@ read_file(const char *path)
 
 	fd = open(path, O_RDONLY);
 	if (fd < 0)
-		ERROR("Internal test error, while opening %s: %s\n", path, strerror(errno));
+		ERROR("Internal test error, while opening %s: %s\n", path, strerror(errno)); /* $covered$ */
 
 	for (;;) {
 		if (len == size) {
 			buf = realloc(buf, (size += 8192) + 1);
 			if (!buf)
-				ERROR("Internal test error, while reading %s: %s\n", path, strerror(ENOMEM));
+				ERROR("Internal test error, while reading %s: %s\n", path, strerror(ENOMEM)); /* $covered$ */
 		}
 		r = read(fd, &buf[len], size - len);
 		if (!r)
 			break;
 		if (r < 0)
-			ERROR("Internal test error, while reading %s: %s\n", path, strerror(errno));
+			ERROR("Internal test error, while reading %s: %s\n", path, strerror(errno)); /* $covered$ */
 		len += (size_t)r;
 	}
 
 	if (memchr(buf, 0, len))
-		ERROR("Internal test error: file %s contains NUL byte\n", path);
+		ERROR("Internal test error: file %s contains NUL byte\n", path); /* $covered$ */
 	buf[len] = '\0';
 
 	close(fd);
@@ -415,24 +417,24 @@ check_kat_file(const char *path, const char *algname, void (*hash_function)(unsi
 	for (line = data; *line; lineno++) {
 		if (!strncmp(line, "in:", sizeof("in:") - 1)) {
 			if (in_line)
-				ERROR("Internal test error, at line %zu in file %s: test contains multiple 'in:'\n", lineno, path);
+				ERROR("Internal test error, at line %zu in file %s: test contains multiple 'in:'\n", lineno, path); /* $covered$ */
 			in_line = line;
 
 		} else if (!strncmp(line, "key:", sizeof("key:") - 1)) {
 			if (key_line)
-				ERROR("Internal test error, at line %zu in file %s: test contains multiple 'key:'\n", lineno, path);
+				ERROR("Internal test error, at line %zu in file %s: test contains multiple 'key:'\n", lineno, path); /* $covered$ */
 			key_line = line;
 
 		} else if (!strncmp(line, "hash:", sizeof("hash:") - 1)) {
 			if (hash_line)
-				ERROR("Internal test error, at line %zu in file %s: test contains multiple 'hash:'\n", lineno, path);
+				ERROR("Internal test error, at line %zu in file %s: test contains multiple 'hash:'\n", lineno, path); /* $covered$ */
 			hash_line = line;
 
 		} else if (*line == '\n') {
 			if (!in_line && !key_line && !hash_line)
-				continue;
+				continue; /* $covered$ */
 			if (!in_line || !key_line || !hash_line)
-				ERROR("Internal test error, at line %zu in file %s: test is incomplete\n", lineno, path);
+				ERROR("Internal test error, at line %zu in file %s: test is incomplete\n", lineno, path); /* $covered$ */
 
 			in_line += sizeof("in:") - 1;
 			key_line += sizeof("key:") - 1;
@@ -448,7 +450,7 @@ check_kat_file(const char *path, const char *algname, void (*hash_function)(unsi
 			key_len = strlen(key_line);
 			hash_len = strlen(hash_line);
 			if (in_len % 2 || key_len % 2 || hash_len % 2)
-				ERROR("Internal test error: corrupted test at line %zu in file %s\n", test_lineno, path);
+				ERROR("Internal test error: corrupted test at line %zu in file %s\n", test_lineno, path); /* $covered$ */
 			in_len /= 2;
 			key_len /= 2;
 			hash_len /= 2;
@@ -456,29 +458,30 @@ check_kat_file(const char *path, const char *algname, void (*hash_function)(unsi
 				in_size = in_len;
 				in_bin = realloc(in_bin, in_size);
 				if (!in_bin)
-					ERROR("Internal test error: %s\n", strerror(ENOMEM));
+					ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
 			}
 			if (key_len > key_size) {
 				key_size = key_len;
 				key_bin = realloc(key_bin, key_size);
 				if (!key_bin)
-					ERROR("Internal test error: %s\n", strerror(ENOMEM));
+					ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
 			}
 			if (hash_len > hash_size) {
 				hash_size = hash_len;
 				hash_bin = realloc(hash_bin, hash_size);
 				if (!hash_bin)
-					ERROR("Internal test error: %s\n", strerror(ENOMEM));
+					ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
 			}
 			if (libblake_decode_hex(in_line, in_len * 2, in_bin, &valid) != in_len || !valid ||
 			    libblake_decode_hex(key_line, key_len * 2, key_bin, &valid) != key_len || !valid ||
 			    libblake_decode_hex(hash_line, hash_len * 2, hash_bin, &valid) != hash_len || !valid)
-				ERROR("Internal test error: corrupted test at line %zu in file %s\n", test_lineno, path);
+				ERROR("Internal test error: corrupted test at line %zu in file %s\n", test_lineno, path); /* $covered$ */
 
 			hash_function(&in_bin, in_len, &in_size, &key_bin, key_len, &key_size,
 			              hash_len, &out, &out_len, &out_size, testno, test_lineno, path);
 
 			if (out_len != hash_len || memcmp(out, hash_bin, hash_len)) {
+				/* $covered{$ */
 				if (out_text_size < out_len * 2 + 1) {
 					out_text_size = out_len * 2 + 1;
 					out_text = realloc(out_text, out_text_size);
@@ -499,6 +502,7 @@ check_kat_file(const char *path, const char *algname, void (*hash_function)(unsi
 				        out_text, out_len, out_len == 1 ? "byte" : "bytes",
 				        hash_line, hash_len, hash_len == 1 ? "byte" : "bytes");
 				failed = 1;
+				/* $covered}$ */
 			}
 
 			in_line = NULL;
@@ -510,12 +514,12 @@ check_kat_file(const char *path, const char *algname, void (*hash_function)(unsi
 			continue;
 
 		} else {
-			ERROR("Internal test error, at line %zu in file %s: unrecognised line\n", lineno, path);
+			ERROR("Internal test error, at line %zu in file %s: unrecognised line\n", lineno, path); /* $covered$ */
 		}
 
 		line = strchr(line, '\n');
 		if (!line)
-			ERROR("Internal test error: file %s is not new-line terminated\n", path);
+			ERROR("Internal test error: file %s is not new-line terminated\n", path); /* $covered$ */
 		*line++ = '\0';
 	}
 
@@ -549,17 +553,17 @@ hash_blake2s(unsigned char **msg, size_t msglen, size_t *msgsize,
 	if (*outlen > *outsize) {
 		*out = realloc(*out, *outsize = *outlen);
 		if (!*out)
-			ERROR("Internal test error: %s\n", strerror(ENOMEM));
+			ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
 	}
 
 	if (keylen > 32)
-		ERROR("Internal test error: corrupted test at line %zu in file %s, key is too long\n", test_lineno, path);
+		ERROR("Internal test error: corrupted test at line %zu in file %s, key is too long\n", test_lineno, path); /* $covered$ */
 
 	req = libblake_blake2s_digest_get_required_input_size(msglen);
 	if (req > *msgsize) {
 		*msg = realloc(*msg, *msgsize = req);
 		if (!*msg)
-			ERROR("Internal test error: %s\n", strerror(ENOMEM));
+			ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
 	}
 
 	if (keylen) {
@@ -567,7 +571,7 @@ hash_blake2s(unsigned char **msg, size_t msglen, size_t *msgsize,
 		if (*keysize < req) {
 			*key = realloc(*key, *keysize = req);
 			if (!*key)
-				ERROR("Internal test error: %s\n", strerror(ENOMEM));
+				ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
 		}
 		memset(&(*key)[keylen], 0, 64 - keylen);
 	}
@@ -604,17 +608,17 @@ hash_blake2b(unsigned char **msg, size_t msglen, size_t *msgsize,
 	if (*outlen > *outsize) {
 		*out = realloc(*out, *outsize = *outlen);
 		if (!*out)
-			ERROR("Internal test error: %s\n", strerror(ENOMEM));
+			ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
 	}
 
 	if (keylen > 64)
-		ERROR("Internal test error: corrupted test at line %zu in file %s, key is too long\n", test_lineno, path);
+		ERROR("Internal test error: corrupted test at line %zu in file %s, key is too long\n", test_lineno, path); /* $covered$ */
 
 	req = libblake_blake2b_digest_get_required_input_size(msglen);
 	if (req > *msgsize) {
 		*msg = realloc(*msg, *msgsize = req);
 		if (!*msg)
-			ERROR("Internal test error: %s\n", strerror(ENOMEM));
+			ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
 	}
 
 	if (keylen) {
@@ -622,7 +626,7 @@ hash_blake2b(unsigned char **msg, size_t msglen, size_t *msgsize,
 		if (*keysize < req) {
 			*key = realloc(*key, *keysize = req);
 			if (!*key)
-				ERROR("Internal test error: %s\n", strerror(ENOMEM));
+				ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
 		}
 		memset(&(*key)[keylen], 0, 128 - keylen);
 	}
