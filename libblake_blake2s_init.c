@@ -17,7 +17,7 @@ le32(uint_least32_t h)
 #endif
 
 void
-libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblake_blake2s_params *params, const unsigned char *key)
+libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblake_blake2s_params *params)
 {
 	state->h[0] = UINT_LEAST32_C(0x6A09E667);
 	state->h[1] = UINT_LEAST32_C(0xBB67AE85);
@@ -77,10 +77,5 @@ libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblak
 		state->h[7] ^= ((uint_least32_t)params->pepper[5] & 255) << 8;
 		state->h[7] ^= ((uint_least32_t)params->pepper[6] & 255) << 16;
 		state->h[7] ^= ((uint_least32_t)params->pepper[7] & 255) << 24;
-	}
-
-	if (params->key_len) {
-		state->t[0] = 64;
-		libblake_internal_blake2s_compress(state, key);
 	}
 }

@@ -21,7 +21,7 @@ le64(uint_least64_t h)
 #endif
 
 void
-libblake_blake2b_init(struct libblake_blake2b_state *state, const struct libblake_blake2b_params *params, const unsigned char *key)
+libblake_blake2b_init(struct libblake_blake2b_state *state, const struct libblake_blake2b_params *params)
 {
 	state->h[0] = UINT_LEAST64_C(0x6A09E667F3BCC908);
 	state->h[1] = UINT_LEAST64_C(0xBB67AE8584CAA73B);
@@ -94,10 +94,5 @@ libblake_blake2b_init(struct libblake_blake2b_state *state, const struct libblak
 		state->h[7] ^= ((uint_least64_t)params->pepper[D] & 255) << 40;
 		state->h[7] ^= ((uint_least64_t)params->pepper[E] & 255) << 48;
 		state->h[7] ^= ((uint_least64_t)params->pepper[F] & 255) << 56;
-	}
-
-	if (params->key_len) {
-		state->t[0] = 128;
-		libblake_internal_blake2b_compress(state, key);
 	}
 }

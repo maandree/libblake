@@ -1,9 +1,15 @@
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <unistd.h>
 
 #include "libblake.h"
+
+#define ERROR(...) (fprintf(stderr, __VA_ARGS__), exit(1))
 
 #define CHECK_HEX(UPPERCASE, X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, XA, XB, XC, XD, XE, XF)\
 	check_hex(UPPERCASE, #X0#X1#X2#X3#X4#X5#X6#X7#X8#X9#XA#XB#XC#XD#XE#XF,\
@@ -20,16 +26,12 @@ check_hex(int uppercase, const char *hex, const unsigned char *bin, size_t n)
 	memset(buf_hex, 0, sizeof(buf_hex));
 	buf_hex[2 * n] = 1;
 	libblake_encode_hex(bin, n, buf_hex, uppercase);
-	if (buf_hex[2 * n] || strcmp(buf_hex, hex)) {
-		fprintf(stderr, "libblake_encode_hex with uppercase=%i failed\n", uppercase);
-		exit(1);
-	}
+	if (buf_hex[2 * n] || strcmp(buf_hex, hex))
+		ERROR("libblake_encode_hex with uppercase=%i failed\n", uppercase);
 	if (libblake_decode_hex(hex, SIZE_MAX, NULL, &valid) != n || !valid ||
 	    libblake_decode_hex(hex, SIZE_MAX, buf_bin, &valid) != n || !valid ||
-	    memcmp(buf_bin, bin, n)) {
-		fprintf(stderr, "libblake_decode_hex failed\n");
-		exit(1);
-	}
+	    memcmp(buf_bin, bin, n))
+		ERROR("libblake_decode_hex failed\n");
 }
 
 static const char *
@@ -343,146 +345,297 @@ check_blake1(void)
 	return failed;
 }
 
-static const char *
-digest_blake2s(int length, const void *msg, size_t msglen)
+static char *
+read_file(const char *path)
 {
-	static char hex[1025];
-	unsigned char buf[512];
-	size_t req;
-	char *data;
-	struct libblake_blake2s_state s;
+	int fd;
+	ssize_t r;
+	size_t len = 0;
+	size_t size = 0;
+	char *buf = NULL;
+
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+		ERROR("Internal test error, while opening %s: %s\n", path, strerror(errno));
+
+	for (;;) {
+		if (len == size) {
+			buf = realloc(buf, (size += 8192) + 1);
+			if (!buf)
+				ERROR("Internal test error, while reading %s: %s\n", path, strerror(ENOMEM));
+		}
+		r = read(fd, &buf[len], size - len);
+		if (!r)
+			break;
+		if (r < 0)
+			ERROR("Internal test error, while reading %s: %s\n", path, strerror(errno));
+		len += (size_t)r;
+	}
+
+	if (memchr(buf, 0, len))
+		ERROR("Internal test error: file %s contains NUL byte\n", path);
+	buf[len] = '\0';
+
+	close(fd);
+	return buf;
+}
+
+static int
+check_kat_file(const char *path, const char *algname, void (*hash_function)(unsigned char **msg, size_t msglen, size_t *msgsize,
+                                                                            unsigned char **key, size_t keylen, size_t *keysize,
+                                                                            size_t hashlen,
+                                                                            unsigned char **out, size_t *outlen, size_t *outsize,
+                                                                            size_t testno, size_t test_lineno, const char *path))
+{
+	char *data = read_file(path);
+	size_t lineno = 1;
+	size_t testno = 1;
+	size_t test_lineno = lineno;
+	char *in_line = NULL;
+	char *key_line = NULL;
+	char *hash_line = NULL;
+	char *line;
+	unsigned char *in_bin = NULL;
+	unsigned char *key_bin = NULL;
+	unsigned char *hash_bin = NULL;
+	size_t in_size = 0;
+	size_t key_size = 0;
+	size_t hash_size = 0;
+	size_t in_len = 0;
+	size_t key_len = 0;
+	size_t hash_len = 0;
+	int failed = 0;
+	int valid;
+	unsigned char *out = NULL;
+	size_t out_len;
+	size_t out_size = 0;
+	char *out_text = NULL;
+	size_t out_text_size = 0;
+
+	for (line = data; *line; lineno++) {
+		if (!strncmp(line, "in:", sizeof("in:") - 1)) {
+			if (in_line)
+				ERROR("Internal test error, at line %zu in file %s: test contains multiple 'in:'\n", lineno, path);
+			in_line = line;
+
+		} else if (!strncmp(line, "key:", sizeof("key:") - 1)) {
+			if (key_line)
+				ERROR("Internal test error, at line %zu in file %s: test contains multiple 'key:'\n", lineno, path);
+			key_line = line;
+
+		} else if (!strncmp(line, "hash:", sizeof("hash:") - 1)) {
+			if (hash_line)
+				ERROR("Internal test error, at line %zu in file %s: test contains multiple 'hash:'\n", lineno, path);
+			hash_line = line;
+
+		} else if (*line == '\n') {
+			if (!in_line && !key_line && !hash_line)
+				continue;
+			if (!in_line || !key_line || !hash_line)
+				ERROR("Internal test error, at line %zu in file %s: test is incomplete\n", lineno, path);
+
+			in_line += sizeof("in:") - 1;
+			key_line += sizeof("key:") - 1;
+			hash_line += sizeof("hash:") - 1;
+			while (isspace(*in_line))
+				in_line++;
+			while (isspace(*key_line))
+				key_line++;
+			while (isspace(*hash_line))
+				hash_line++;
+
+			in_len = strlen(in_line);
+			key_len = strlen(key_line);
+			hash_len = strlen(hash_line);
+			if (in_len % 2 || key_len % 2 || hash_len % 2)
+				ERROR("Internal test error: corrupted test at line %zu in file %s\n", test_lineno, path);
+			in_len /= 2;
+			key_len /= 2;
+			hash_len /= 2;
+			if (in_len > in_size) {
+				in_size = in_len;
+				in_bin = realloc(in_bin, in_size);
+				if (!in_bin)
+					ERROR("Internal test error: %s\n", strerror(ENOMEM));
+			}
+			if (key_len > key_size) {
+				key_size = key_len;
+				key_bin = realloc(key_bin, key_size);
+				if (!key_bin)
+					ERROR("Internal test error: %s\n", strerror(ENOMEM));
+			}
+			if (hash_len > hash_size) {
+				hash_size = hash_len;
+				hash_bin = realloc(hash_bin, hash_size);
+				if (!hash_bin)
+					ERROR("Internal test error: %s\n", strerror(ENOMEM));
+			}
+			if (libblake_decode_hex(in_line, in_len * 2, in_bin, &valid) != in_len || !valid ||
+			    libblake_decode_hex(key_line, key_len * 2, key_bin, &valid) != key_len || !valid ||
+			    libblake_decode_hex(hash_line, hash_len * 2, hash_bin, &valid) != hash_len || !valid)
+				ERROR("Internal test error: corrupted test at line %zu in file %s\n", test_lineno, path);
+
+			hash_function(&in_bin, in_len, &in_size, &key_bin, key_len, &key_size,
+			              hash_len, &out, &out_len, &out_size, testno, test_lineno, path);
+
+			if (out_len != hash_len || memcmp(out, hash_bin, hash_len)) {
+				if (out_text_size < out_len * 2 + 1) {
+					out_text_size = out_len * 2 + 1;
+					out_text = realloc(out_text, out_text_size);
+					if (!out_text)
+						ERROR("Internal test error: %s\n", strerror(ENOMEM));
+				}
+				libblake_encode_hex(out, out_len, out_text, 0);
+				fprintf(stderr,
+				        "%s failed for test %zu at line %zu in file %s:\n"
+				        "\tMessage:  0x%s (%zu %s)\n"
+				        "\tKey:      0x%s (%zu %s)\n"
+				        "\tResult:   0x%s (%zu %s)\n"
+				        "\tExpected: 0x%s (%zu %s)\n"
+				        "\n",
+				        algname, testno, test_lineno, path,
+				        in_line, in_len, in_len == 1 ? "byte" : "bytes",
+				        key_line, key_len, key_len == 1 ? "byte" : "bytes",
+				        out_text, out_len, out_len == 1 ? "byte" : "bytes",
+				        hash_line, hash_len, hash_len == 1 ? "byte" : "bytes");
+				failed = 1;
+			}
+
+			in_line = NULL;
+			key_line = NULL;
+			hash_line = NULL;
+			testno += 1;
+			test_lineno = lineno + 1;
+			line++;
+			continue;
+
+		} else {
+			ERROR("Internal test error, at line %zu in file %s: unrecognised line\n", lineno, path);
+		}
+
+		line = strchr(line, '\n');
+		if (!line)
+			ERROR("Internal test error: file %s is not new-line terminated\n", path);
+		*line++ = '\0';
+	}
+
+	free(in_bin);
+	free(key_bin);
+	free(hash_bin);
+	free(out_text);
+	free(out);
+	free(data);
+	return failed;
+}
+
+static void
+hash_blake2s(unsigned char **msg, size_t msglen, size_t *msgsize,
+             unsigned char **key, size_t keylen, size_t *keysize,
+             size_t hashlen,
+             unsigned char **out, size_t *outlen, size_t *outsize,
+             size_t testno, size_t test_lineno, const char *path)
+{
 	struct libblake_blake2s_params params;
+	struct libblake_blake2s_state state;
+	size_t req;
 
 	memset(&params, 0, sizeof(params));
-	params.digest_len = (uint_least8_t)(length / 8);
+	params.digest_len = (uint_least8_t)hashlen;
 	params.fanout = 1;
 	params.depth = 1;
+	params.key_len = keylen;
+
+	*outlen = hashlen;
+	if (*outlen > *outsize) {
+		*out = realloc(*out, *outsize = *outlen);
+		if (!*out)
+			ERROR("Internal test error: %s\n", strerror(ENOMEM));
+	}
+
+	if (keylen > 32)
+		ERROR("Internal test error: corrupted test at line %zu in file %s, key is too long\n", test_lineno, path);
 
 	req = libblake_blake2s_digest_get_required_input_size(msglen);
-	data = malloc(req);
-	memcpy(data, msg, msglen);
-	libblake_blake2s_init(&s, &params, NULL);
-	libblake_blake2s_digest(&s, data, msglen, 0, (size_t)length / 8, buf);
-	libblake_encode_hex(buf, (size_t)length / 8, hex, 0);
-	free(data);
-
-	return hex;
-}
-
-#define CHECK_BLAKE2S_STR(LENGTH, MSG, EXPECTED)\
-	failed |= !check_blake2s_(LENGTH, "“"MSG"”", MSG, sizeof(MSG) - 1, EXPECTED)
-#define CHECK_BLAKE2S_224_STR(MSG, EXPECTED) CHECK_BLAKE2S_STR(224, MSG, EXPECTED)
-#define CHECK_BLAKE2S_256_STR(MSG, EXPECTED) CHECK_BLAKE2S_STR(256, MSG, EXPECTED)
-
-#if 0
-# define CHECK_BLAKE2S_HEX(LENGTH, MSG, EXPECTED)\
-	failed |= !check_blake2s_(LENGTH, "0x"MSG, buf, libblake_decode_hex(MSG, SIZE_MAX, buf, &(int){0}), EXPECTED)
-# define CHECK_BLAKE2S_224_HEX(MSG, EXPECTED) CHECK_BLAKE2S_HEX(224, MSG, EXPECTED)
-# define CHECK_BLAKE2S_256_HEX(MSG, EXPECTED) CHECK_BLAKE2S_HEX(256, MSG, EXPECTED)
-#endif
-
-static int
-check_blake2s_(int length, const char *dispmsg, const void *msg, size_t msglen, const char *expected)
-{
-	const char *result;
-	result = digest_blake2s(length, msg, msglen);
-	if (strcasecmp(result, expected)) {
-		fprintf(stderr, "BLAKE2s-%i failed for %s:\n", length, dispmsg);
-		fprintf(stderr, "\tResult:   %s\n", result);
-		fprintf(stderr, "\tExpected: %s\n", expected);
-		fprintf(stderr, "\n");
-		return 0;
+	if (req > *msgsize) {
+		*msg = realloc(*msg, *msgsize = req);
+		if (!*msg)
+			ERROR("Internal test error: %s\n", strerror(ENOMEM));
 	}
-	return 1;
+
+	if (keylen) {
+		req = msglen ? 64 : libblake_blake2s_digest_get_required_input_size(64);
+		if (*keysize < req) {
+			*key = realloc(*key, *keysize = req);
+			if (!*key)
+				ERROR("Internal test error: %s\n", strerror(ENOMEM));
+		}
+		memset(&(*key)[keylen], 0, 64 - keylen);
+	}
+
+	memset(*out, 0xCC, *outsize);
+	libblake_blake2s_init(&state, &params);
+	if (keylen && !msglen) {
+		libblake_blake2s_digest(&state, *key, 64, 0, *outlen, *out);
+	} else {
+		if (keylen)
+			libblake_blake2s_force_update(&state, *key, 64);
+		libblake_blake2s_digest(&state, *msg, msglen, 0, *outlen, *out);
+	}
 }
 
-static int
-check_blake2s(void)
+static void
+hash_blake2b(unsigned char **msg, size_t msglen, size_t *msgsize,
+             unsigned char **key, size_t keylen, size_t *keysize,
+             size_t hashlen,
+             unsigned char **out, size_t *outlen, size_t *outsize,
+             size_t testno, size_t test_lineno, const char *path)
 {
-#if 0
-	char buf[1025];
-#endif
-	int failed = 0;
-
-	CHECK_BLAKE2S_224_STR("", "1fa1291e65248b37b3433475b2a0dd63d54a11ecc4e3e034e7bc1ef4");
-	CHECK_BLAKE2S_256_STR("", "69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9");
-	/* TODO need more tests for BLAKE2s */
-
-	return failed;
-}
-
-static const char *
-digest_blake2b(int length, const void *msg, size_t msglen)
-{
-	static char hex[1025];
-	unsigned char buf[512];
-	size_t req;
-	char *data;
-	struct libblake_blake2b_state s;
 	struct libblake_blake2b_params params;
+	struct libblake_blake2b_state state;
+	size_t req;
 
 	memset(&params, 0, sizeof(params));
-	params.digest_len = (uint_least8_t)(length / 8);
+	params.digest_len = (uint_least8_t)hashlen;
 	params.fanout = 1;
 	params.depth = 1;
+	params.key_len = keylen;
+
+	*outlen = hashlen;
+	if (*outlen > *outsize) {
+		*out = realloc(*out, *outsize = *outlen);
+		if (!*out)
+			ERROR("Internal test error: %s\n", strerror(ENOMEM));
+	}
+
+	if (keylen > 64)
+		ERROR("Internal test error: corrupted test at line %zu in file %s, key is too long\n", test_lineno, path);
 
 	req = libblake_blake2b_digest_get_required_input_size(msglen);
-	data = malloc(req);
-	memcpy(data, msg, msglen);
-	libblake_blake2b_init(&s, &params, NULL);
-	libblake_blake2b_digest(&s, data, msglen, 0, (size_t)length / 8, buf);
-	libblake_encode_hex(buf, (size_t)length / 8, hex, 0);
-	free(data);
-
-	return hex;
-}
-
-#define CHECK_BLAKE2B_STR(LENGTH, MSG, EXPECTED)\
-	failed |= !check_blake2b_(LENGTH, "“"MSG"”", MSG, sizeof(MSG) - 1, EXPECTED)
-#define CHECK_BLAKE2B_384_STR(MSG, EXPECTED) CHECK_BLAKE2B_STR(384, MSG, EXPECTED)
-#define CHECK_BLAKE2B_512_STR(MSG, EXPECTED) CHECK_BLAKE2B_STR(512, MSG, EXPECTED)
-
-#if 0
-# define CHECK_BLAKE2B_HEX(LENGTH, MSG, EXPECTED)\
-	failed |= !check_blake2b_(LENGTH, "0x"MSG, buf, libblake_decode_hex(MSG, SIZE_MAX, buf, &(int){0}), EXPECTED)
-# define CHECK_BLAKE2B_384_HEX(MSG, EXPECTED) CHECK_BLAKE2B_HEX(384, MSG, EXPECTED)
-# define CHECK_BLAKE2B_512_HEX(MSG, EXPECTED) CHECK_BLAKE2B_HEX(512, MSG, EXPECTED)
-#endif
-
-static int
-check_blake2b_(int length, const char *dispmsg, const void *msg, size_t msglen, const char *expected)
-{
-	const char *result;
-	result = digest_blake2b(length, msg, msglen);
-	if (strcasecmp(result, expected)) {
-		fprintf(stderr, "BLAKE2b-%i failed for %s:\n", length, dispmsg);
-		fprintf(stderr, "\tResult:   %s\n", result);
-		fprintf(stderr, "\tExpected: %s\n", expected);
-		fprintf(stderr, "\n");
-		return 0;
+	if (req > *msgsize) {
+		*msg = realloc(*msg, *msgsize = req);
+		if (!*msg)
+			ERROR("Internal test error: %s\n", strerror(ENOMEM));
 	}
-	return 1;
-}
 
-static int
-check_blake2b(void)
-{
-#if 0
-	char buf[1025];
-#endif
-	int failed = 0;
+	if (keylen) {
+		req = msglen ? 128 : libblake_blake2b_digest_get_required_input_size(128);
+		if (*keysize < req) {
+			*key = realloc(*key, *keysize = req);
+			if (!*key)
+				ERROR("Internal test error: %s\n", strerror(ENOMEM));
+		}
+		memset(&(*key)[keylen], 0, 128 - keylen);
+	}
 
-	CHECK_BLAKE2B_384_STR("", "b32811423377f52d7862286ee1a72ee540524380fda1724a6f25d7978c6fd3244a6caf0498812673c5e05ef583825100");
-	CHECK_BLAKE2B_512_STR("", "786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce");
-
-	CHECK_BLAKE2B_512_STR("The quick brown fox jumps over the lazy dog",
-	                      "a8add4bdddfd93e4877d2746e62817b116364a1fa7bc148d95090bc7333b3673f82401cf7aa2e4cb1ecd90296e3f14cb5413f8ed77be73045b13914cdcd6a918");
-
-	CHECK_BLAKE2B_512_STR("The quick brown fox jumps over the lazy dof",
-	                      "ab6b007747d8068c02e25a6008db8a77c218d94f3b40d2291a7dc8a62090a744c082ea27af01521a102e42f480a31e9844053f456b4b41e8aa78bbe5c12957bb");
-	/* TODO need more tests for BLAKE2b */
-
-	return failed;
+	memset(*out, 0xCC, *outsize);
+	libblake_blake2b_init(&state, &params);
+	if (keylen && !msglen) {
+		libblake_blake2b_digest(&state, *key, 128, 0, *outlen, *out);
+	} else {
+		if (keylen)
+			libblake_blake2b_force_update(&state, *key, 128);
+		libblake_blake2b_digest(&state, *msg, msglen, 0, *outlen, *out);
+	}
 }
 
 int
@@ -496,10 +649,10 @@ main(void)
 	CHECK_HEX(0, 00, 12, 32, 00, 45, 67, 82, 9a, b0, cd, fe, ff, 80, 08, cc, 28);
 
 	failed |= check_blake1();
-	failed |= check_blake2s();
-	failed |= check_blake2b();
-	/* TODO need tests for BLAKE2Xs */
-	/* TODO need tests for BLAKE2Xb */
+	failed |= check_kat_file("./kat-blake2s", "BLAKE2s", &hash_blake2s);
+	failed |= check_kat_file("./kat-blake2b", "BLAKE2b", &hash_blake2b);
+	/* TODO need tests for BLAKE2[sb] with salt and pepper */
+	/* TODO need tests for BLAKE2X[sb] */
 
 	return failed;
 }

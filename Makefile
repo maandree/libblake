@@ -83,6 +83,11 @@ HDR =\
 	libblake.h\
 	common.h
 
+# Known answers tests
+KAT_FILES =\
+	kat-blake2b\
+	kat-blake2s
+
 LOBJ = $(OBJ:.o=.lo)
 
 
@@ -119,7 +124,7 @@ libblake.a: $(OBJ)
 libblake.$(LIBEXT): $(LOBJ)
 	$(CC) $(LIBFLAGS) -o $@ $(LOBJ) $(LDFLAGS)
 
-check: test
+check: test $(KAT_FILES)
 	$(CHECK_PREFIX) ./test
 
 install: libblake.a libblake.$(LIBEXT)

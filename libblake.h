@@ -806,20 +806,19 @@ struct libblake_blake2b_state {
 /**
  * Initialise a state for hashing with BLAKE2s
  * 
+ * For keyed mode, which is used for MAC and PRF,
+ * after calling this function, the 64 first bytes
+ * input to the hash function shall be the key
+ * with NUL bytes appended to it (such that the
+ * length is 64 bytes, which is double the maximum
+ * allowed length of the key, but is the size
+ * block size used by BLAKE2s)
+ * 
  * @param  state   The state to initialise
  * @param  params  Hashing parameters
- * @param  key     Key to use. The key's length is set in
- *                 `params->key_len`, but unless this value
- *                 is 0 (hash in unkeyed mode), this buffer
- *                 must be padded with NUL bytes, to the end,
- *                 such that it's length is at least 64 bytes.
- *                 (The maximum allowed key length is 32, the
- *                 buffer's size shall be twice this.) The
- *                 key is used for MAC and PRF.
  */
 LIBBLAKE_PUBLIC__ void
-libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblake_blake2s_params *params,
-                      const unsigned char *key /* append null bytes until 64 bytes; if key is used */);
+libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblake_blake2s_params *params);
 
 /**
  * Process data for hashing with BLAKE2s
@@ -908,20 +907,19 @@ libblake_blake2s_digest(struct libblake_blake2s_state *state, void *data, size_t
 /**
  * Initialise a state for hashing with BLAKE2b
  * 
+ * For keyed mode, which is used for MAC and PRF,
+ * after calling this function, the 128 first bytes
+ * input to the hash function shall be the key
+ * with NUL bytes appended to it (such that the
+ * length is 128 bytes, which is double the maximum
+ * allowed length of the key, but is the size
+ * block size used by BLAKE2b)
+ * 
  * @param  state   The state to initialise
  * @param  params  Hashing parameters
- * @param  key     Key to use. The key's length is set in
- *                 `params->key_len`, but unless this value
- *                 is 0 (hash in unkeyed mode), this buffer
- *                 must be padded with NUL bytes, to the end,
- *                 such that it's length is at least 128 bytes.
- *                 (The maximum allowed key length is 64, the
- *                 buffer's size shall be twice this.) The
- *                 key is used for MAC and PRF.
  */
 LIBBLAKE_PUBLIC__ void
-libblake_blake2b_init(struct libblake_blake2b_state *state, const struct libblake_blake2b_params *params,
-                      const unsigned char *key /* append null bytes until 128 bytes; if key is used */);
+libblake_blake2b_init(struct libblake_blake2b_state *state, const struct libblake_blake2b_params *params);
 
 /**
  * Process data for hashing with BLAKE2b
