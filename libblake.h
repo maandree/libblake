@@ -209,8 +209,8 @@ libblake_blake224_digest_get_required_input_size(size_t len, size_t bits, const 
 /**
  * Calculate the BLAKE224 hash of the input data
  * 
- * The `state` parameter must be initialised using the
- * `libblake_blake224_init` function, after which, but
+ * The `state` parameter must have been initialised using
+ * the `libblake_blake224_init` function, after which, but
  * before this function is called, `libblake_blake224_update`
  * can be used to process data before this function is
  * called. Already processed data shall not be input to
@@ -297,8 +297,8 @@ libblake_blake256_digest_get_required_input_size(size_t len, size_t bits, const 
 /**
  * Calculate the BLAKE256 hash of the input data
  * 
- * The `state` parameter must be initialised using the
- * `libblake_blake256_init` function, after which, but
+ * The `state` parameter must have been initialised using
+ * the `libblake_blake256_init` function, after which, but
  * before this function is called, `libblake_blake256_update`
  * can be used to process data before this function is
  * called. Already processed data shall not be input to
@@ -383,8 +383,8 @@ libblake_blake384_digest_get_required_input_size(size_t len, size_t bits, const 
 /**
  * Calculate the BLAKE384 hash of the input data
  * 
- * The `state` parameter must be initialised using the
- * `libblake_blake384_init` function, after which, but
+ * The `state` parameter must have been initialised using
+ * the `libblake_blake384_init` function, after which, but
  * before this function is called, `libblake_blake384_update`
  * can be used to process data before this function is
  * called. Already processed data shall not be input to
@@ -471,8 +471,8 @@ libblake_blake512_digest_get_required_input_size(size_t len, size_t bits, const 
 /**
  * Calculate the BLAKE512 hash of the input data
  * 
- * The `state` parameter must be initialised using the
- * `libblake_blake512_init` function, after which, but
+ * The `state` parameter must have been initialised using
+ * the `libblake_blake512_init` function, after which, but
  * before this function is called, `libblake_blake512_update`
  * can be used to process data before this function is
  * called. Already processed data shall not be input to
@@ -875,8 +875,8 @@ libblake_blake2s_digest_get_required_input_size(size_t len);
 /**
  * Calculate the BLAKE2s hash of the input data
  * 
- * The `state` parameter must be initialised using the
- * `libblake_blake2s_init` function, after which, but
+ * The `state` parameter must have been initialised using
+ * the `libblake_blake2s_init` function, after which, but
  * before this function is called, `libblake_blake2s_update`
  * and `libblake_blake2s_force_update` can be used to
  * process data before this function is called. Already
@@ -900,7 +900,7 @@ libblake_blake2s_digest_get_required_input_size(size_t len);
  *                     at least `output_len` bytes
  */
 LIBBLAKE_PUBLIC__ void
-libblake_blake2s_digest(struct libblake_blake2s_state *state, void *data, size_t len, int last_node /* normally 0 */,
+libblake_blake2s_digest(struct libblake_blake2s_state *state, void *data, size_t len, int last_node,
                         size_t output_len, unsigned char output[static output_len]);
 
 
@@ -977,8 +977,8 @@ libblake_blake2b_digest_get_required_input_size(size_t len);
 /**
  * Calculate the BLAKE2b hash of the input data
  * 
- * The `state` parameter must be initialised using the
- * `libblake_blake2b_init` function, after which, but
+ * The `state` parameter must have been initialised using
+ * the `libblake_blake2b_init` function, after which, but
  * before this function is called, `libblake_blake2b_update`
  * and `libblake_blake2b_force_update` can be used to
  * process data before this function is called. Already
@@ -1002,7 +1002,7 @@ libblake_blake2b_digest_get_required_input_size(size_t len);
  *                     at least `output_len` bytes
  */
 LIBBLAKE_PUBLIC__ void
-libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data, size_t len, int last_node /* normally 0 */,
+libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data, size_t len, int last_node,
                         size_t output_len, unsigned char output[static output_len]);
 
 
@@ -1068,67 +1068,259 @@ struct libblake_blake2xb_state {
 
 
 
+/**
+ * Initialise a state for hashing with BLAKE2Xs
+ * 
+ * @param  state   The state to initialise
+ * @param  params  Hashing parameters
+ * @param  key     Key to use. The key's length is set in
+ *                 `params->key_len`, but unless this value
+ *                 is 0 (hash in unkeyed mode), this buffer
+ *                 must be padded with NUL bytes, to the end,
+ *                 such that it's length is at least 64 bytes.
+ *                 (The maximum allowed key length is 32, the
+ *                 buffer's size shall be twice this.) The
+ *                 key is used for MAC and PRF.
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake2xs_init(struct libblake_blake2xs_state *state, const struct libblake_blake2xs_params *params,
                        const unsigned char *key /* append null bytes until 64 bytes; if key is used */);
 
+/**
+ * Process data for hashing with BLAKE2Xs
+ * 
+ * The function can only process multiples of 64 bytes,
+ * but cannot process that last chunk of 64 bytes
+ * unless a non-multiple of 64 bytes is input to the
+ * function; any excess data will be ignored and must
+ * be processed when more data is available or using
+ * `libblake_blake2xs_predigest` when the end of the
+ * input has been reached
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ inline size_t
 libblake_blake2xs_update(struct libblake_blake2xs_state *state, const void *data, size_t len) {
 	return libblake_blake2s_update(&state->b2s, data, len);
 }
 
+/**
+ * Process data for hashing with BLAKE2Xs
+ * 
+ * The function can only process multiples of 64 bytes,
+ * any excess data will be ignored and must be
+ * processed when more data is available or using
+ * `libblake_blake2xs_predigest` when the end of the
+ * input has been reached
+ * 
+ * Unlike `libblake_blake2xs_update`, this function
+ * will all input data if `len` is a multiple of
+ * 64, however the application must make sure that
+ * there is more data to process
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ inline size_t
 libblake_blake2xs_force_update(struct libblake_blake2xs_state *state, const void *data, size_t len) {
 	return libblake_blake2s_force_update(&state->b2s, data, len);
 }
 
-LIBBLAKE_PUBLIC__ inline void
-libblake_blake2xs_predigest(struct libblake_blake2xs_state *state, void *data, size_t len, int last_node) {
-	libblake_blake2s_digest(&state->b2s, data, len, last_node, (size_t)state->xof_params.digest_len, state->intermediate);
-}
-
+/**
+ * Get the required allocation size of the
+ * input buffer for `libblake_blake2xs_predigest`
+ * 
+ * @param   len  The number of input bytes
+ * @return       The number bytes required for the input buffer
+ */
 LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ inline size_t
 libblake_blake2xs_predigest_get_required_input_size(const struct libblake_blake2xs_state *state) {
 	return libblake_blake2s_digest_get_required_input_size((size_t)state->xof_params.digest_len);
 }
 
+/**
+ * Perform intermediate hashing calculation for
+ * a BLAKE2Xs hash at the end of the input data
+ * 
+ * The `state` parameter must have been initialised using
+ * the `libblake_blake2xs_init` function, after which, but
+ * before this function is called, `libblake_blake2xs_update`
+ * and `libblake_blake2xs_force_update` can be used to
+ * process data before this function is called. Already
+ * processed data shall not be input to this function.
+ * 
+ * @param  state       The state of the hash function
+ * @param  data        Data to process; the function will write addition data to
+ *                     the end, therefore the size of this buffer must be at least
+ *                     `libblake_blake2xs_digest_get_required_input_size(len)`
+ *                     bytes large
+ * @param  len         The number of input bytes
+ * @param  last_node   Shall be non-0 the last node at each level in the
+ *                     hashing tree, include the root node, however, it
+ *                     shall be 0 if not using tree-hashing
+ */
+LIBBLAKE_PUBLIC__ inline void
+libblake_blake2xs_predigest(struct libblake_blake2xs_state *state, void *data, size_t len, int last_node) {
+	libblake_blake2s_digest(&state->b2s, data, len, last_node, (size_t)state->xof_params.digest_len, state->intermediate);
+}
+
+/**
+ * Calculate part of a BLAKE2Xs hashing
+ * 
+ * All parts of the hash can be calculated in parallel
+ * 
+ * The `state` parameter must have preprocessed
+ * using the `libblake_blake2xs_predigest` function
+ * 
+ * @param  state   The state of the hash function
+ * @param  i       The index of the portion of the hash that
+ *                 shall be calculated, that is, the offset in
+ *                 the hash divided by 32, meaning that it
+ *                 shall be 0 when calculating the first 32
+ *                 bytes, and hash calculation stops when
+ *                 `i * 32` is equal to or greater than the
+ *                 desired hash length
+ * @param  len     Given the desired total hash length, in bytes,
+ *                 `length`, `len` shall be the minimum of `32`
+ *                 and `length - i * 32`
+ * @param  output  Output buffer for the hash offset by `i * 32`
+ */
 LIBBLAKE_PUBLIC__ void
-libblake_blake2xs_digest(const struct libblake_blake2xs_state *state,
-                         uint_least32_t i /* start 0, increase by 1 until i * 32 >= desired hash length */,
-                         uint_least8_t len /* desired hash MIN(length - i * 32, 32) */,
-                         unsigned char output[static len] /* output for hash offset by i * 32 */);
+libblake_blake2xs_digest(const struct libblake_blake2xs_state *state, uint_least32_t i,
+                         uint_least8_t len, unsigned char output[static len]);
 
 
 
+/**
+ * Initialise a state for hashing with BLAKE2Xb
+ * 
+ * @param  state   The state to initialise
+ * @param  params  Hashing parameters
+ * @param  key     Key to use. The key's length is set in
+ *                 `params->key_len`, but unless this value
+ *                 is 0 (hash in unkeyed mode), this buffer
+ *                 must be padded with NUL bytes, to the end,
+ *                 such that it's length is at least 128 bytes.
+ *                 (The maximum allowed key length is 64, the
+ *                 buffer's size shall be twice this.) The
+ *                 key is used for MAC and PRF.
+ */
 LIBBLAKE_PUBLIC__ void
 libblake_blake2xb_init(struct libblake_blake2xb_state *state, const struct libblake_blake2xb_params *params,
                        const unsigned char *key /* append null bytes until 128 bytes; if key is used */);
 
+/**
+ * Process data for hashing with BLAKE2Xb
+ * 
+ * The function can only process multiples of 128 bytes,
+ * but cannot process that last chunk of 128 bytes
+ * unless a non-multiple of 128 bytes is input to the
+ * function; any excess data will be ignored and must
+ * be processed when more data is available or using
+ * `libblake_blake2xb_predigest` when the end of the
+ * input has been reached
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ inline size_t
 libblake_blake2xb_update(struct libblake_blake2xb_state *state, const void *data, size_t len) {
 	return libblake_blake2b_update(&state->b2b, data, len);
 }
 
+/**
+ * Process data for hashing with BLAKE2Xb
+ * 
+ * The function can only process multiples of 128 bytes,
+ * any excess data will be ignored and must be
+ * processed when more data is available or using
+ * `libblake_blake2xs_predigest` when the end of the
+ * input has been reached
+ * 
+ * Unlike `libblake_blake2xb_update`, this function
+ * will all input data if `len` is a multiple of
+ * 128, however the application must make sure that
+ * there is more data to process
+ * 
+ * @param   state  The state of the hash function
+ * @param   data   The data to feed into the function
+ * @param   len    The maximum number of bytes to process
+ * @return         The number of processed bytes
+ */
 LIBBLAKE_PUBLIC__ inline size_t
 libblake_blake2xb_force_update(struct libblake_blake2xb_state *state, const void *data, size_t len) {
 	return libblake_blake2b_update(&state->b2b, data, len);
 }
 
-LIBBLAKE_PUBLIC__ inline void
-libblake_blake2xb_predigest(struct libblake_blake2xb_state *state, void *data, size_t len, int last_node) {
-	libblake_blake2b_digest(&state->b2b, data, len, last_node, state->xof_params.digest_len, state->intermediate);
-}
-
+/**
+ * Get the required allocation size of the
+ * input buffer for `libblake_blake2xb_predigest`
+ * 
+ * @param   len  The number of input bytes
+ * @return       The number bytes required for the input buffer
+ */
 LIBBLAKE_PUBLIC__ LIBBLAKE_PURE__ inline size_t
 libblake_blake2xb_predigest_get_required_input_size(const struct libblake_blake2xb_state *state) {
 	return libblake_blake2b_digest_get_required_input_size((size_t)state->xof_params.digest_len);
 }
 
+/**
+ * Perform intermediate hashing calculation for
+ * a BLAKE2Xb hash at the end of the input data
+ * 
+ * The `state` parameter must have been initialised using
+ * the `libblake_blake2xb_init` function, after which, but
+ * before this function is called, `libblake_blake2xb_update`
+ * and `libblake_blake2xb_force_update` can be used to
+ * process data before this function is called. Already
+ * processed data shall not be input to this function.
+ * 
+ * @param  state       The state of the hash function
+ * @param  data        Data to process; the function will write addition data to
+ *                     the end, therefore the size of this buffer must be at least
+ *                     `libblake_blake2xb_digest_get_required_input_size(len)`
+ *                     bytes large
+ * @param  len         The number of input bytes
+ * @param  last_node   Shall be non-0 the last node at each level in the
+ *                     hashing tree, include the root node, however, it
+ *                     shall be 0 if not using tree-hashing
+ */
+LIBBLAKE_PUBLIC__ inline void
+libblake_blake2xb_predigest(struct libblake_blake2xb_state *state, void *data, size_t len, int last_node) {
+	libblake_blake2b_digest(&state->b2b, data, len, last_node, state->xof_params.digest_len, state->intermediate);
+}
+
+/**
+ * Calculate part of a BLAKE2Xb hashing
+ * 
+ * All parts of the hash can be calculated in parallel
+ * 
+ * The `state` parameter must have preprocessed
+ * using the `libblake_blake2xb_predigest` function
+ * 
+ * @param  state   The state of the hash function
+ * @param  i       The index of the portion of the hash that
+ *                 shall be calculated, that is, the offset in
+ *                 the hash divided by 64, meaning that it
+ *                 shall be 0 when calculating the first 64
+ *                 bytes, and hash calculation stops when
+ *                 `i * 64` is equal to or greater than the
+ *                 desired hash length
+ * @param  len     Given the desired total hash length, in bytes,
+ *                 `length`, `len` shall be the minimum of `64`
+ *                 and `length - i * 64`
+ * @param  output  Output buffer for the hash offset by `i * 64`
+ */
 LIBBLAKE_PUBLIC__ void
-libblake_blake2xb_digest(const struct libblake_blake2xb_state *state,
-                         uint_least32_t i /* start 0, increase by 1 until i * 64 >= desired hash length */,
-                         uint_least8_t len /* desired hash MIN(length - i * 64, 64) */,
-                         unsigned char output[static len] /* output for hash offset by i * 64 */);
+libblake_blake2xb_digest(const struct libblake_blake2xb_state *state, uint_least32_t i,
+                         uint_least8_t len, unsigned char output[static len]);
 
 
 
