@@ -1069,6 +1069,8 @@ struct libblake_blake2xb_state {
 /**
  * Initialise a state for hashing with BLAKE2Xs
  * 
+ * NB! BLAKE2X has not been finalised as of 2022-02-20
+ * 
  * @param  state   The state to initialise
  * @param  params  Hashing parameters
  */
@@ -1187,6 +1189,8 @@ libblake_blake2xs_digest(const struct libblake_blake2xs_state *state, uint_least
 
 /**
  * Initialise a state for hashing with BLAKE2Xb
+ * 
+ * NB! BLAKE2X has not been finalised as of 2022-02-20
  * 
  * @param  state   The state to initialise
  * @param  params  Hashing parameters
