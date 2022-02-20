@@ -104,6 +104,34 @@ libblake_decode_hex(const char *data, size_t n, void *out, int *validp);
 #define LIBBLAKE_BLAKE512_OUTPUT_SIZE (512 / 8)
 
 /**
+ * The block size used by BLAKE224; it will only
+ * process a multiple of this number of bytes in
+ * each call to `libblake_blake224_update`
+ */
+#define LIBBLAKE_BLAKE224_BLOCK_SIZE 64
+
+/**
+ * The block size used by BLAKE256; it will only
+ * process a multiple of this number of bytes in
+ * each call to `libblake_blake256_update`
+ */
+#define LIBBLAKE_BLAKE256_BLOCK_SIZE 64
+
+/**
+ * The block size used by BLAKE384; it will only
+ * process a multiple of this number of bytes in
+ * each call to `libblake_blake384_update`
+ */
+#define LIBBLAKE_BLAKE384_BLOCK_SIZE 128
+
+/**
+ * The block size used by BLAKE512; it will only
+ * process a multiple of this number of bytes in
+ * each call to `libblake_blake512_update`
+ */
+#define LIBBLAKE_BLAKE512_BLOCK_SIZE 128
+
+/**
  * State for BLAKEs hashing (BLAKE224 and BLAKE256)
  * 
  * This structure should be considered internal
@@ -504,6 +532,22 @@ libblake_blake512_digest(struct libblake_blake512_state *state, void *data, size
 
 
 /*********************************** BLAKE2 ***********************************/
+
+/**
+ * The block size used by BLAKE2s; it will only
+ * process a multiple of this number of bytes in
+ * each call to `libblake_blake2s_update` or
+ * `libblake_blake2s_force_update`
+ */
+#define LIBBLAKE_BLAKE2S_BLOCK_SIZE 64
+
+/**
+ * The block size used by BLAKE2b; it will only
+ * process a multiple of this number of bytes in
+ * each call to `libblake_blake2b_update` or
+ * `libblake_blake2b_force_update`
+ */
+#define LIBBLAKE_BLAKE2B_BLOCK_SIZE 128
 
 /**
  * BLAKE2s hashing parameters
@@ -1006,6 +1050,22 @@ libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data, size_t
 
 
 /*********************************** BLAKE2X (!!DRAFT!!) ***********************************/
+
+/**
+ * The block size used by BLAKE2Xs; it will only
+ * process a multiple of this number of bytes in
+ * each call to `libblake_blake2xs_update` or
+ * `libblake_blake2xs_force_update`
+ */
+#define LIBBLAKE_BLAKE2XS_BLOCK_SIZE 64
+
+/**
+ * The block size used by BLAKE2Xb; it will only
+ * process a multiple of this number of bytes in
+ * each call to `libblake_blake2xb_update` or
+ * `libblake_blake2xb_force_update`
+ */
+#define LIBBLAKE_BLAKE2XB_BLOCK_SIZE 128
 
 /**
  * BLAKE2Xs hashing parameters
