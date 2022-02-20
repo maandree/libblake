@@ -1,4 +1,4 @@
-NAME
+>NAME
 	libblake - Library for the BLAKE-family of hashing functions
 
 DESCRIPTION
@@ -10,4 +10,4 @@ FEATURE DIRECTIONS
 	libblake will implement BLAKE3 in the future.
 
 SEE ALSO
-	libkeccak(7), libar2(7)
+	libkeccak(7), libar2(7), blakesum
