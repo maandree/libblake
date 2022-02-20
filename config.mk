@@ -4,10 +4,8 @@ MANPREFIX = $(PREFIX)/share/man
 CC = cc -std=c11
 
 CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE=700 -D_GNU_SOURCE
-#CFLAGS   = -Wall -O3
-#LDFLAGS  = -s
-CFLAGS   = -Wall -Og -g
-LDFLAGS  = 
+CFLAGS   = -Wall -O3
+LDFLAGS  = -s
 
 # These optimisations may not only break compatibility with
 # processors that the software was not compiled on, but they
