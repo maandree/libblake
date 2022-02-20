@@ -654,8 +654,8 @@ main(void)
 
 	failed |= check_blake1();
 	/* TODO need tests for BLAKE1 with salt and suffix */
-	failed |= check_kat_file("./kat-blake2s", "BLAKE2s", &hash_blake2s);
-	failed |= check_kat_file("./kat-blake2b", "BLAKE2b", &hash_blake2b);
+	failed |= check_kat_file("kat/blake2s", "BLAKE2s", &hash_blake2s);
+	failed |= check_kat_file("kat/blake2b", "BLAKE2b", &hash_blake2b);
 	/* TODO need tests for BLAKE2[sb] with salt and pepper */
 	/* TODO test libblake_blake2s_update */
 	/* TODO test libblake_blake2b_update */

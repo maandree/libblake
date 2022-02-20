@@ -93,8 +93,8 @@ SRC =\
 
 # Known answers tests
 KAT_FILES =\
-	kat-blake2b\
-	kat-blake2s
+	kat/blake2b\
+	kat/blake2s
 
 LOBJ = $(OBJ:.o=.lo)
 
