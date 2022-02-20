@@ -1005,7 +1005,7 @@ libblake_blake2b_digest(struct libblake_blake2b_state *state, void *data, size_t
 
 
 
-/*********************************** BLAKE2X ***********************************/
+/*********************************** BLAKE2X (!!DRAFT!!) ***********************************/
 
 /**
  * BLAKE2Xs hashing parameters
