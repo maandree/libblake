@@ -1071,18 +1071,9 @@ struct libblake_blake2xb_state {
  * 
  * @param  state   The state to initialise
  * @param  params  Hashing parameters
- * @param  key     Key to use. The key's length is set in
- *                 `params->key_len`, but unless this value
- *                 is 0 (hash in unkeyed mode), this buffer
- *                 must be padded with NUL bytes, to the end,
- *                 such that it's length is at least 64 bytes.
- *                 (The maximum allowed key length is 32, the
- *                 buffer's size shall be twice this.) The
- *                 key is used for MAC and PRF.
  */
 LIBBLAKE_PUBLIC__ void
-libblake_blake2xs_init(struct libblake_blake2xs_state *state, const struct libblake_blake2xs_params *params,
-                       const unsigned char *key /* append null bytes until 64 bytes; if key is used */);
+libblake_blake2xs_init(struct libblake_blake2xs_state *state, const struct libblake_blake2xs_params *params);
 
 /**
  * Process data for hashing with BLAKE2Xs
@@ -1199,18 +1190,9 @@ libblake_blake2xs_digest(const struct libblake_blake2xs_state *state, uint_least
  * 
  * @param  state   The state to initialise
  * @param  params  Hashing parameters
- * @param  key     Key to use. The key's length is set in
- *                 `params->key_len`, but unless this value
- *                 is 0 (hash in unkeyed mode), this buffer
- *                 must be padded with NUL bytes, to the end,
- *                 such that it's length is at least 128 bytes.
- *                 (The maximum allowed key length is 64, the
- *                 buffer's size shall be twice this.) The
- *                 key is used for MAC and PRF.
  */
 LIBBLAKE_PUBLIC__ void
-libblake_blake2xb_init(struct libblake_blake2xb_state *state, const struct libblake_blake2xb_params *params,
-                       const unsigned char *key /* append null bytes until 128 bytes; if key is used */);
+libblake_blake2xb_init(struct libblake_blake2xb_state *state, const struct libblake_blake2xb_params *params);
 
 /**
  * Process data for hashing with BLAKE2Xb

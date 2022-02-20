@@ -2,7 +2,7 @@
 #include "common.h"
 
 void
-libblake_blake2xs_init(struct libblake_blake2xs_state *state, const struct libblake_blake2xs_params *params, const unsigned char *key)
+libblake_blake2xs_init(struct libblake_blake2xs_state *state, const struct libblake_blake2xs_params *params)
 {
 	libblake_internal_blake2xs_init0(state, params);
 
@@ -17,9 +17,4 @@ libblake_blake2xs_init(struct libblake_blake2xs_state *state, const struct libbl
 	state->xof_params.inner_len = 32;
 
 	memset(&state->intermediate, 0, sizeof(state->intermediate));
-
-	if (params->key_len) {
-		state->b2s.t[0] = 64;
-		libblake_internal_blake2s_compress(&state->b2s, key);
-	}
 }
