@@ -547,7 +547,7 @@ hash_blake2s(unsigned char **msg, size_t msglen, size_t *msgsize,
 	params.digest_len = (uint_least8_t)hashlen;
 	params.fanout = 1;
 	params.depth = 1;
-	params.key_len = keylen;
+	params.key_len = (uint_least8_t)keylen;
 
 	*outlen = hashlen;
 	if (*outlen > *outsize) {
@@ -602,7 +602,7 @@ hash_blake2b(unsigned char **msg, size_t msglen, size_t *msgsize,
 	params.digest_len = (uint_least8_t)hashlen;
 	params.fanout = 1;
 	params.depth = 1;
-	params.key_len = keylen;
+	params.key_len = (uint_least8_t)keylen;
 
 	*outlen = hashlen;
 	if (*outlen > *outsize) {
@@ -642,6 +642,130 @@ hash_blake2b(unsigned char **msg, size_t msglen, size_t *msgsize,
 	}
 }
 
+static void
+hash_blake2xs(unsigned char **msg, size_t msglen, size_t *msgsize,
+              unsigned char **key, size_t keylen, size_t *keysize,
+              size_t hashlen,
+              unsigned char **out, size_t *outlen, size_t *outsize,
+              size_t testno, size_t test_lineno, const char *path)
+{
+	struct libblake_blake2xs_params params;
+	struct libblake_blake2xs_state state;
+	size_t req, rem, i, off;
+
+	memset(&params, 0, sizeof(params));
+	params.digest_len = 32;
+	params.key_len = (uint_least8_t)keylen;
+	params.fanout = 1;
+	params.depth = 1;
+	params.xof_len = (uint_least64_t)hashlen;
+
+	memset(*out, 0xCC, *outsize);
+	libblake_blake2xs_init(&state, &params);
+
+	*outlen = hashlen;
+	if (*outlen > *outsize) {
+		*out = realloc(*out, *outsize = *outlen);
+		if (!*out)
+			ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
+	}
+
+	if (keylen > 64)
+		ERROR("Internal test error: corrupted test at line %zu in file %s, key is too long\n", test_lineno, path); /* $covered$ */
+
+	req = libblake_blake2xs_predigest_get_required_input_size(&state);
+	if (req > *msgsize) {
+		*msg = realloc(*msg, *msgsize = req);
+		if (!*msg)
+			ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
+	}
+
+	if (keylen) {
+		req = msglen ? 64 : libblake_blake2xs_predigest_get_required_input_size(&state);
+		if (*keysize < req) {
+			*key = realloc(*key, *keysize = req);
+			if (!*key)
+				ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
+		}
+		memset(&(*key)[keylen], 0, 64 - keylen);
+	}
+
+	if (keylen && !msglen) {
+		libblake_blake2xs_predigest(&state, *key, 64, 0);
+	} else {
+		if (keylen)
+			libblake_blake2xs_force_update(&state, *key, 64);
+		libblake_blake2xs_predigest(&state, *msg, msglen, 0);
+	}
+
+	for (i = 0, rem = *outlen, off = 0; rem >= 32; i++, rem -= 32, off += 32)
+		libblake_blake2xs_digest(&state, i, 32, &(*out)[off]);
+	if (rem)
+		libblake_blake2xs_digest(&state, i, rem, &(*out)[off]);
+}
+
+static void
+hash_blake2xb(unsigned char **msg, size_t msglen, size_t *msgsize,
+              unsigned char **key, size_t keylen, size_t *keysize,
+              size_t hashlen,
+              unsigned char **out, size_t *outlen, size_t *outsize,
+              size_t testno, size_t test_lineno, const char *path)
+{
+	struct libblake_blake2xb_params params;
+	struct libblake_blake2xb_state state;
+	size_t req, rem, i, off;
+
+	memset(&params, 0, sizeof(params));
+	params.digest_len = 64;
+	params.key_len = (uint_least8_t)keylen;
+	params.fanout = 1;
+	params.depth = 1;
+	params.xof_len = (uint_least64_t)hashlen;
+
+	memset(*out, 0xCC, *outsize);
+	libblake_blake2xb_init(&state, &params);
+
+	*outlen = hashlen;
+	if (*outlen > *outsize) {
+		*out = realloc(*out, *outsize = *outlen);
+		if (!*out)
+			ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
+	}
+
+	if (keylen > 128)
+		ERROR("Internal test error: corrupted test at line %zu in file %s, key is too long\n", test_lineno, path); /* $covered$ */
+
+	req = libblake_blake2xb_predigest_get_required_input_size(&state);
+	if (req > *msgsize) {
+		*msg = realloc(*msg, *msgsize = req);
+		if (!*msg)
+			ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
+	}
+
+	if (keylen) {
+		req = msglen ? 128 : libblake_blake2xb_predigest_get_required_input_size(&state);
+		if (*keysize < req) {
+			*key = realloc(*key, *keysize = req);
+			if (!*key)
+				ERROR("Internal test error: %s\n", strerror(ENOMEM)); /* $covered$ */
+		}
+		memset(&(*key)[keylen], 0, 128 - keylen);
+	}
+
+	if (keylen && !msglen) {
+		libblake_blake2xb_predigest(&state, *key, 128, 0);
+	} else {
+		if (keylen)
+			libblake_blake2xb_force_update(&state, *key, 128);
+		libblake_blake2xb_predigest(&state, *msg, msglen, 0);
+	}
+
+	for (i = 0, rem = *outlen, off = 0; rem >= 64; i++, rem -= 64, off += 64)
+		libblake_blake2xb_digest(&state, i, 64, &(*out)[off]);
+	if (rem)
+		libblake_blake2xb_digest(&state, i, rem, &(*out)[off]);
+}
+
 int
 main(void)
 {
@@ -657,9 +781,17 @@ main(void)
 	failed |= check_kat_file("kat/blake2s", "BLAKE2s", &hash_blake2s);
 	failed |= check_kat_file("kat/blake2b", "BLAKE2b", &hash_blake2b);
 	/* TODO need tests for BLAKE2[sb] with salt and pepper */
+	failed |= check_kat_file("kat/blake2xs", "BLAKE2Xs", &hash_blake2xs);
+	failed |= check_kat_file("kat/blake2xb", "BLAKE2Xb", &hash_blake2xb);
+
+	/* TODO test libblake_blake224_update */
+	/* TODO test libblake_blake256_update */
+	/* TODO test libblake_blake384_update */
+	/* TODO test libblake_blake512_update */
 	/* TODO test libblake_blake2s_update */
 	/* TODO test libblake_blake2b_update */
-	/* TODO need tests for BLAKE2X[sb] */
+	/* TODO test libblake_blake2xs_update */
+	/* TODO test libblake_blake2xb_update */
 
 	return failed;
 }

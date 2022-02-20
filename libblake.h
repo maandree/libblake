@@ -1240,7 +1240,7 @@ libblake_blake2xb_update(struct libblake_blake2xb_state *state, const void *data
  */
 LIBBLAKE_PUBLIC__ inline size_t
 libblake_blake2xb_force_update(struct libblake_blake2xb_state *state, const void *data, size_t len) {
-	return libblake_blake2b_update(&state->b2b, data, len);
+	return libblake_blake2b_force_update(&state->b2b, data, len);
 }
 
 /**
