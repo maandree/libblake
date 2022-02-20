@@ -3,8 +3,9 @@
 
 DESCRIPTION
 	libblake is a C library that implements the BLAKE-family of
-	cryptographic hashing functions. libblake implements the
-	SHA-3 finalists BLAKE as well as BLAKE2 and BLAKE2X.
+	cryptographic hashing functions with a zero-copy interface.
+	libblake implements the SHA-3 finalists BLAKE as well as
+	BLAKE2 and BLAKE2X.
 
 FEATURE DIRECTIONS
 	libblake will implement BLAKE3 in the future.
