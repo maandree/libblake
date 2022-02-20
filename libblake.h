@@ -555,10 +555,9 @@ libblake_blake512_digest(struct libblake_blake512_state *state, void *data, size
 struct libblake_blake2s_params {
 
 	/**
-	 * The size of the output hash, in bytes
-	 * (in its raw binary encoding, i.e. before
-	 * encoded to hexadecimal or other text
-	 * encoding)
+	 * The size of the output hash, in bytes (in its raw
+	 * binary encoding, i.e. before encoded to hexadecimal
+	 * or other text encoding)
 	 * 
 	 * This value shall be between within [1, 32]
 	 */
@@ -567,54 +566,50 @@ struct libblake_blake2s_params {
 	/**
 	 * The size of the key, in bytes
 	 * 
-	 * This value shall be 0 for unkeyed mode
-	 * and within [1, 32] for keyed mode
+	 * This value shall be 0 for unkeyed mode and within
+	 * [1, 32] for keyed mode
 	 * 
 	 * Keyed mode is used for MAC and PRF
 	 */
 	uint_least8_t key_len;
 
 	/**
-	 * The fan-out on each non-root node
-	 * in tree hashing, 0 for unlimited
+	 * The fan-out on each non-root node in tree hashing,
+	 * 0 for unlimited
 	 * 
-	 * Set to 1 if not using tree-hashing
+	 * Set to 1 if, and only if, not using tree-hashing
 	 */
 	uint_least8_t fanout;
 
 	/**
-	 * The maximum depth of the hashing tree,
-	 * 255 for unlimited, 0 is forbidden
+	 * The maximum depth of the hashing tree, 255 for
+	 * unlimited, 0 is forbidden
 	 * 
-	 * It is recommended that 2 is used
-	 * (the value will affect the resulting
-	 * hashing) if the fan-out is unlimited
+	 * It is recommended that 2 is used (the value will
+	 * affect the resulting hashing) if the fan-out is
+	 * unlimited
 	 * 
-	 * Set to 1 if not using tree-hashing
+	 * Set to 1 if, and only if, not using tree-hashing
 	 */
 	uint_least8_t depth;
 
 	/**
-	 * The number of bytes from the input to
-	 * process at each leaf in the hashing
-	 * tree; 0 if unlimited
+	 * The number of bytes from the input to process at
+	 * each leaf in the hashing tree; 0 if unlimited
 	 * 
 	 * Set to 0 if not using tree-hashing
 	 */
 	uint_least32_t leaf_len;
 
 	/**
-	 * The offset of the current node in the
-	 * hashing tree
+	 * The offset of the current node in the hashing tree
 	 * 
-	 * For leaf nodes, this is the position
-	 * in the input, that is being processed
-	 * by the current node in the hashing
-	 * tree, divided by `.leaf_len`, or 0 if
-	 * `.leaf_len` is 0. For non-leaf nodes
-	 * this value is further divided by the
-	 * fan-out once per level removed from
-	 * the leaf nodes.
+	 * For leaf nodes, this is the position in the input,
+	 * that is being processed by the current node in the
+	 * hashing tree, divided by `.leaf_len`, or 0 if
+	 * `.leaf_len` is 0. For non-leaf nodes this value is
+	 * further divided by the fan-out once per level
+	 * removed from the leaf nodes.
 	 * 
 	 * This value is limited to 48 bits.
 	 * 
@@ -623,23 +618,21 @@ struct libblake_blake2s_params {
 	uint_least64_t node_offset;
 
 	/**
-	 * The depth of the current node in the
-	 * hashing tree
+	 * The depth of the current node in the hashing tree
 	 * 
-	 * This value is 0 for the root node,
-	 * and plus 1 per level down the tree
+	 * This value is 0 for the leaves, and plus 1 per
+	 * level up the tree towards the root
 	 * 
 	 * Set to 0 if not using tree-hashing
 	 */
 	uint_least8_t node_depth;
 
 	/**
-	 * Inner hash (the intermediate hash
-	 * produced at each node except the
-	 * root node) length, in bytes
+	 * Inner hash (the intermediate hash produced at
+	 * each node except the root node) length, in bytes
 	 * 
-	 * This value shall be between within
-	 * [1, 32] for tree-hashing
+	 * This value shall be between within [1, 32] for
+	 * tree-hashing
 	 * 
 	 * Set to 0 if not using tree-hashing
 	 */
@@ -648,40 +641,36 @@ struct libblake_blake2s_params {
 	uint_least8_t _padding[2]; /* to keep .salt and .pepper aligned as uint_least32_t */
 
 	/**
-	 * 8-byte salt used to make the hash
-	 * unique even if the input is not unique
+	 * 8-byte salt used to make the hash unique even if
+	 * the input is not unique
 	 * 
-	 * These is normally used in password hashing
-	 * schemes to avoid duplicate hashing where
-	 * two user's have the same password, and,
-	 * more importantly, to prevent rainbow-table
-	 * attacks
+	 * These is normally used in password hashing schemes
+	 * to avoid duplicate hashing where two user's have
+	 * the same password, and, more importantly, to prevent
+	 * rainbow-table attacks
 	 * 
-	 * This is normally not used when producing
-	 * checksum for files, and should normally
-	 * be all NUL bytes in such cases
+	 * This is normally not used when producing checksum
+	 * for files, and should normally be all NUL bytes
+	 * in such cases
 	 */
 	uint_least8_t salt[8];
 
 	/**
-	 * 8-byte pepper ("personalisation") used to
-	 * make the hash application-unique
+	 * 8-byte pepper ("personalisation") used to make the
+	 * hash application-unique
 	 * 
-	 * These is normally used (in the rare cases
-	 * when it is used) in password hashing
-	 * schemes as an extra level of security
-	 * (through obscurity; something that is OK
-	 * only when it is an _extra_ level of
-	 * security). A pepper must not be stored
-	 * in a password database; it should be
-	 * compiled into the application that
-	 * calculates the hash, to avoid it being
-	 * accessed by a hacker when he gets access
-	 * to the password table.
+	 * These is normally used (in the rare cases when it is
+	 * used) in password hashing schemes as an extra level
+	 * of security (through obscurity; something that is OK
+	 * only when it is an _extra_ level of security). A pepper
+	 * must not be stored in a password database; it should
+	 * be compiled into the application that calculates the
+	 * hash, to avoid it being accessed by a hacker when he
+	 * gets access to the password table.
 	 * 
-	 * This is normally not used when producing
-	 * checksum for files, and should normally
-	 * be all NUL bytes in such cases
+	 * This is normally not used when producing checksum for
+	 * files, and should normally be all NUL bytes in such
+	 * cases
 	 */
 	uint_least8_t pepper[8];
 };
@@ -692,10 +681,9 @@ struct libblake_blake2s_params {
 struct libblake_blake2b_params {
 
 	/**
-	 * The size of the output hash, in bytes
-	 * (in its raw binary encoding, i.e. before
-	 * encoded to hexadecimal or other text
-	 * encoding)
+	 * The size of the output hash, in bytes (in its raw
+	 * binary encoding, i.e. before encoded to hexadecimal
+	 * other text encoding)
 	 * 
 	 * This value shall be between within [1, 64]
 	 */
@@ -704,77 +692,70 @@ struct libblake_blake2b_params {
 	/**
 	 * The size of the key, in bytes
 	 * 
-	 * This value shall be 0 for unkeyed mode
-	 * and within [1, 64] for keyed mode
+	 * This value shall be 0 for unkeyed mode and within
+	 * [1, 64] for keyed mode
 	 * 
 	 * Keyed mode is used for MAC and PRF
 	 */
 	uint_least8_t key_len;
 
 	/**
-	 * The fan-out on each non-root node
-	 * in tree hashing
+	 * The fan-out on each non-root node in tree hashing
 	 * 
-	 * Set to 1 if not using tree-hashing
+	 * Set to 1 if, and only if, not using tree-hashing
 	 */
 	uint_least8_t fanout;
 
 	/**
-	 * The maximum depth of the hashing tree,
-	 * 255 for unlimited, 0 is forbidden
+	 * The maximum depth of the hashing tree, 255 for
+	 * unlimited, 0 is forbidden
 	 * 
-	 * It is recommended that 2 is used
-	 * (the value will affect the resulting
-	 * hashing) if the fan-out is unlimited
+	 * It is recommended that 2 is used (the value will
+	 * affect the resulting hashing) if the fan-out is
+	 * unlimited
 	 * 
-	 * Set to 1 if not using tree-hashing
+	 * Set to 1 if, and only if, not using tree-hashing
 	 */
 	uint_least8_t depth;
 
 	/**
-	 * The number of bytes from the input to
-	 * process at each leaf in the hashing
-	 * tree; 0 if unlimited
+	 * The number of bytes from the input to process at
+	 * each leaf in the hashing tree; 0 if unlimited
 	 * 
 	 * Set to 0 if not using tree-hashing
 	 */
 	uint_least32_t leaf_len;
 
 	/**
-	 * The offset of the current node in the
-	 * hashing tree
+	 * The offset of the current node in the hashing tree
 	 * 
-	 * For leaf nodes, this is the position
-	 * in the input, that is being processed
-	 * by the current node in the hashing
-	 * tree, divided by `.leaf_len`, or 0 if
-	 * `.leaf_len` is 0. For non-leaf nodes
-	 * this value is further divided by the
-	 * fan-out once per level removed from
-	 * the leaf nodes.
+	 * For leaf nodes, this is the position in the input,
+	 * that is being processed by the current node in the
+	 * hashing tree, divided by `.leaf_len`, or 0 if
+	 * `.leaf_len` is 0. For non-leaf nodes this value is
+	 * further divided by the fan-out once per level
+	 * removed from the leaf nodes.
 	 * 
 	 * Set to 0 if not using tree-hashing
 	 */
 	uint_least64_t node_offset;
 
 	/**
-	 * The depth of the current node in the
-	 * hashing tree
+	 * The depth of the current node in the hashing tree
 	 * 
-	 * This value is 0 for the root node,
-	 * and plus 1 per level down the tree
+	 * This value is 0 for the leaves, and plus 1 per
+	 * level up the tree towards the root
 	 * 
 	 * Set to 0 if not using tree-hashing
 	 */
 	uint_least8_t node_depth;
 
 	/**
-	 * Inner hash (the intermediate hash
-	 * produced at each node except the
-	 * root node) length, in bytes
+	 * Inner hash (the intermediate hash produced at each
+	 * node except the root node) length, in bytes
 	 * 
-	 * This value shall be between within
-	 * [1, 32] for tree-hashing
+	 * This value shall be between within [1, 32] for
+	 * tree-hashing
 	 * 
 	 * Set to 0 if not using tree-hashing
 	 */
@@ -783,40 +764,36 @@ struct libblake_blake2b_params {
 	uint_least8_t _padding[6]; /* to keep .salt and .pepper aligned as uint_least64_t */
 
 	/**
-	 * 8-byte salt used to make the hash
-	 * unique even if the input is not unique
+	 * 8-byte salt used to make the hash unique even if
+	 * the input is not unique
 	 * 
-	 * These is normally used in password hashing
-	 * schemes to avoid duplicate hashing where
-	 * two user's have the same password, and,
-	 * more importantly, to prevent rainbow-table
-	 * attacks
+	 * These is normally used in password hashing schemes
+	 * to avoid duplicate hashing where two user's have the
+	 * same password, and, more importantly, to prevent
+	 * rainbow-table attacks
 	 * 
-	 * This is normally not used when producing
-	 * checksum for files, and should normally
-	 * be all NUL bytes in such cases
+	 * This is normally not used when producing checksum
+	 * for files, and should normally be all NUL bytes in
+	 * such cases
 	 */
 	uint_least8_t salt[16];
 
 	/**
-	 * 16-byte pepper ("personalisation") used to
-	 * make the hash application-unique
+	 * 16-byte pepper ("personalisation") used to make the
+	 * hash application-unique
 	 * 
-	 * These is normally used (in the rare cases
-	 * when it is used) in password hashing
-	 * schemes as an extra level of security
-	 * (through obscurity; something that is OK
-	 * only when it is an _extra_ level of
-	 * security). A pepper must not be stored
-	 * in a password database; it should be
-	 * compiled into the application that
-	 * calculates the hash, to avoid it being
-	 * accessed by a hacker when he gets access
-	 * to the password table.
+	 * These is normally used (in the rare cases when it is
+	 * used) in password hashing schemes as an extra level
+	 * of security (through obscurity; something that is OK
+	 * only when it is an _extra_ level of security). A pepper
+	 * must not be stored in a password database; it should be
+	 * compiled into the application that calculates the hash,
+	 * to avoid it being accessed by a hacker when he gets
+	 * access to the password table.
 	 * 
-	 * This is normally not used when producing
-	 * checksum for files, and should normally
-	 * be all NUL bytes in such cases
+	 * This is normally not used when producing checksum for
+	 * files, and should normally be all NUL bytes in such
+	 * cases
 	 */
 	uint_least8_t pepper[16];
 };
