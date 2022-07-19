@@ -52,9 +52,37 @@
 # define HAS_BUILTIN(X) 0
 #endif
 
-#if defined(__x86_64__) || defined(__i386__)
-# define LITTLE_ENDIAN
-#else
+#ifndef LIBBLAKE_ENDIAN_KNOWN__
+# if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__)
+#  if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#   define LITTLE_ENDIAN
+#   define LIBBLAKE_ENDIAN_KNOWN__
+#  endif
+# endif
+#endif
+#ifndef LIBBLAKE_ENDIAN_KNOWN__
+# if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__)
+#  if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#   define BIG_ENDIAN
+#   define LIBBLAKE_ENDIAN_KNOWN__
+#  endif
+# endif
+#endif
+#ifndef LIBBLAKE_ENDIAN_KNOWN__
+# if defined(__BYTE_ORDER__) && defined(__ORDER_PDP_ENDIAN__)
+#  if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
+#   define PDP_ENDIAN
+#   define LIBBLAKE_ENDIAN_KNOWN__
+#  endif
+# endif
+#endif
+#ifndef LIBBLAKE_ENDIAN_KNOWN__
+# if defined(__x86_64__) || defined(__i386__)
+#  define LITTLE_ENDIAN
+#  define LIBBLAKE_ENDIAN_KNOWN__
+# endif
+#endif
+#ifndef LIBBLAKE_ENDIAN_KNOWN__
 # error Endian is unknown
 #endif
 
