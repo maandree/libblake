@@ -870,8 +870,8 @@ libblake_blake2s_update(struct libblake_blake2s_state *state, const void *data, 
  * has been reached
  * 
  * Unlike `libblake_blake2s_update`, this function
- * will all input data if `len` is a multiple of
- * 64, however the application must make sure that
+ * will process all input data if `len` is a multiple
+ * of 64, however the application must make sure that
  * there is more data to process
  * 
  * @param   state  The state of the hash function
@@ -971,8 +971,8 @@ libblake_blake2b_update(struct libblake_blake2b_state *state, const void *data, 
  * has been reached
  * 
  * Unlike `libblake_blake2b_update`, this function
- * will all input data if `len` is a multiple of
- * 128, however the application must make sure that
+ * will processes all input data if `len` is a multiple
+ * of 128, however the application must make sure that
  * there is more data to process
  * 
  * @param   state  The state of the hash function
