@@ -253,7 +253,7 @@ libblake_blake224_digest_get_required_input_size(size_t len, size_t bits, const 
  * @param  bits    The number of input bits after the last whole bytes
  *                 (may actually be greater than 7); these bits shall
  *                 be stored in `data[len]`'s (addition bytes will be used
- *                 if `bits > 8`) lower bits
+ *                 if `bits > 8`) higher bits
  * @param  suffix  String of '0's and '1's of addition bits to add to the
  *                 end of the input, or `NULL` (or the empty string) if none;
  *                 the first character corresponds to the lowest indexed
@@ -341,7 +341,7 @@ libblake_blake256_digest_get_required_input_size(size_t len, size_t bits, const 
  * @param  bits    The number of input bits after the last whole bytes
  *                 (may actually be greater than 7); these bits shall
  *                 be stored in `data[len]`'s (addition bytes will be used
- *                 if `bits > 8`) lower bits
+ *                 if `bits > 8`) higher bits
  * @param  suffix  String of '0's and '1's of addition bits to add to the
  *                 end of the input, or `NULL` (or the empty string) if none;
  *                 the first character corresponds to the lowest indexed
@@ -427,7 +427,7 @@ libblake_blake384_digest_get_required_input_size(size_t len, size_t bits, const 
  * @param  bits    The number of input bits after the last whole bytes
  *                 (may actually be greater than 7); these bits shall
  *                 be stored in `data[len]`'s (addition bytes will be used
- *                 if `bits > 8`) lower bits
+ *                 if `bits > 8`) higher bits
  * @param  suffix  String of '0's and '1's of addition bits to add to the
  *                 end of the input, or `NULL` (or the empty string) if none;
  *                 the first character corresponds to the lowest indexed
@@ -515,7 +515,7 @@ libblake_blake512_digest_get_required_input_size(size_t len, size_t bits, const 
  * @param  bits    The number of input bits after the last whole bytes
  *                 (may actually be greater than 7); these bits shall
  *                 be stored in `data[len]`'s (addition bytes will be used
- *                 if `bits > 8`) lower bits
+ *                 if `bits > 8`) higher bits
  * @param  suffix  String of '0's and '1's of addition bits to add to the
  *                 end of the input, or `NULL` (or the empty string) if none;
  *                 the first character corresponds to the lowest indexed
