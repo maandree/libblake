@@ -764,7 +764,7 @@ struct libblake_blake2b_params {
 	uint_least8_t _padding[6]; /* to keep .salt and .pepper aligned as uint_least64_t */
 
 	/**
-	 * 8-byte salt used to make the hash unique even if
+	 * 16-byte salt used to make the hash unique even if
 	 * the input is not unique
 	 * 
 	 * These is normally used in password hashing schemes
@@ -832,7 +832,7 @@ struct libblake_blake2b_state {
  * input to the hash function shall be the key
  * with NUL bytes appended to it (such that the
  * length is 64 bytes, which is double the maximum
- * allowed length of the key, but is the size
+ * allowed length of the key, but is the input
  * block size used by BLAKE2s)
  * 
  * @param  state   The state to initialise
@@ -933,7 +933,7 @@ libblake_blake2s_digest(struct libblake_blake2s_state *state, void *data, size_t
  * input to the hash function shall be the key
  * with NUL bytes appended to it (such that the
  * length is 128 bytes, which is double the maximum
- * allowed length of the key, but is the size
+ * allowed length of the key, but is the input
  * block size used by BLAKE2b)
  * 
  * @param  state   The state to initialise
