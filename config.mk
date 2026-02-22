@@ -9,7 +9,7 @@ LDFLAGS  = -s
 
 # These optimisations may not only break compatibility with
 # processors that the software was not compiled on, but they
-# will infact also degrade performance. Therefore they are
-# only only used for specific translation units.
+# will in fact also degrade performance. Therefore they are
+# only used for specific translation units.
 CFLAGS_MM128 = -msse4.1 -mavx2
 CFLAGS_MM256 = -msse4.1 -mavx2
