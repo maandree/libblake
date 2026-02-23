@@ -543,6 +543,8 @@ hash_blake2s(unsigned char **msg, size_t msglen, size_t *msgsize,
 	struct libblake_blake2s_state state;
 	size_t req;
 
+	(void) testno;
+
 	memset(&params, 0, sizeof(params));
 	params.digest_len = (uint_least8_t)hashlen;
 	params.fanout = 1;
@@ -598,6 +600,8 @@ hash_blake2b(unsigned char **msg, size_t msglen, size_t *msgsize,
 	struct libblake_blake2b_state state;
 	size_t req;
 
+	(void) testno;
+
 	memset(&params, 0, sizeof(params));
 	params.digest_len = (uint_least8_t)hashlen;
 	params.fanout = 1;
@@ -651,14 +655,17 @@ hash_blake2xs(unsigned char **msg, size_t msglen, size_t *msgsize,
 {
 	struct libblake_blake2xs_params params;
 	struct libblake_blake2xs_state state;
-	size_t req, rem, i, off;
+	size_t req, rem, off;
+	uint_least32_t i;
+
+	(void) testno;
 
 	memset(&params, 0, sizeof(params));
 	params.digest_len = 32;
 	params.key_len = (uint_least8_t)keylen;
 	params.fanout = 1;
 	params.depth = 1;
-	params.xof_len = (uint_least64_t)hashlen;
+	params.xof_len = (uint_least16_t)hashlen;
 
 	memset(*out, 0xCC, *outsize);
 	libblake_blake2xs_init(&state, &params);
@@ -701,7 +708,7 @@ hash_blake2xs(unsigned char **msg, size_t msglen, size_t *msgsize,
 	for (i = 0, rem = *outlen, off = 0; rem >= 32; i++, rem -= 32, off += 32)
 		libblake_blake2xs_digest(&state, i, 32, &(*out)[off]);
 	if (rem)
-		libblake_blake2xs_digest(&state, i, rem, &(*out)[off]);
+		libblake_blake2xs_digest(&state, i, (uint_least8_t)rem, &(*out)[off]);
 }
 
 static void
@@ -713,14 +720,17 @@ hash_blake2xb(unsigned char **msg, size_t msglen, size_t *msgsize,
 {
 	struct libblake_blake2xb_params params;
 	struct libblake_blake2xb_state state;
-	size_t req, rem, i, off;
+	size_t req, rem, off;
+	uint_least32_t i;
+
+	(void) testno;
 
 	memset(&params, 0, sizeof(params));
 	params.digest_len = 64;
 	params.key_len = (uint_least8_t)keylen;
 	params.fanout = 1;
 	params.depth = 1;
-	params.xof_len = (uint_least64_t)hashlen;
+	params.xof_len = (uint_least32_t)hashlen;
 
 	memset(*out, 0xCC, *outsize);
 	libblake_blake2xb_init(&state, &params);
@@ -763,7 +773,7 @@ hash_blake2xb(unsigned char **msg, size_t msglen, size_t *msgsize,
 	for (i = 0, rem = *outlen, off = 0; rem >= 64; i++, rem -= 64, off += 64)
 		libblake_blake2xb_digest(&state, i, 64, &(*out)[off]);
 	if (rem)
-		libblake_blake2xb_digest(&state, i, rem, &(*out)[off]);
+		libblake_blake2xb_digest(&state, i, (uint_least8_t)rem, &(*out)[off]);
 }
 
 int
