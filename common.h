@@ -77,7 +77,7 @@
 # endif
 #endif
 #ifndef LIBBLAKE_ENDIAN_KNOWN__
-# if defined(__x86_64__) || defined(__i386__)
+# if defined(__x86_64__) || defined(__i386__) || defined(__AARCH64EL__)
 #  define LITTLE_ENDIAN
 #  define LIBBLAKE_ENDIAN_KNOWN__
 # endif
