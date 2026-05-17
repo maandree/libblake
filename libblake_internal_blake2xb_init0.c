@@ -1,9 +1,10 @@
 /* See LICENSE file for copyright and license details. */
 #include "common.h"
 
-#if defined(LITTLE_ENDIAN)
-# define le64(X) X
-#else
+#if UINT_LEAST64_MAX == UINT64_MAX
+# if defined(LITTLE_ENDIAN)
+#  define le64(X) X
+# else
 static uint_least64_t
 le64(uint_least64_t h)
 {
@@ -17,6 +18,17 @@ le64(uint_least64_t h)
 	r[6] = (unsigned char)((h >> 48) & 255);
 	r[7] = (unsigned char)((h >> 56) & 255);
 	return *(uint_least64_t *)r;
+}
+# endif
+
+# define ALIGNED_U64(X, I) ((const uint_least64_t *)(const unsigned char *)(X))[I]
+# define UNALIGNED_U64(X, I) load64(&((const unsigned char *)(X))[I * sizeof(const uint_least64_t)])
+static uint_least64_t
+load64(const unsigned char *data)
+{
+	uint_least64_t h = 0;
+	memcpy(&h, data, 8);
+	return h;
 }
 #endif
 
@@ -37,23 +49,25 @@ libblake_internal_blake2xb_init0(struct libblake_blake2xb_state *state, const st
 	state->b2b.f[0] = 0;
 	state->b2b.f[1] = 0;
 
+#if UINT_LEAST64_MAX == UINT64_MAX
 	if (CODE_KILLER(offsetof(struct libblake_blake2xb_params, inner_len) == 17)) {
-#if defined(__clang__)
-# pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Wcast-align"
-#endif
-		state->b2b.h[0] ^= le64(((const uint_least64_t *)params)[0]);
-		state->b2b.h[1] ^= le64(((const uint_least64_t *)params)[1]);
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wcast-align"
+# endif
+		state->b2b.h[0] ^= le64(ALIGNED_U64(params, 0));
+		state->b2b.h[1] ^= le64(ALIGNED_U64(params, 1));
 		state->b2b.h[2] ^= le64(((uint_least64_t)params->node_depth << 0) |
 		                        ((uint_least64_t)params->inner_len << 8));
-		state->b2b.h[4] ^= le64(*(const uint_least64_t *)&params->salt[0]);
-		state->b2b.h[5] ^= le64(*(const uint_least64_t *)&params->salt[8]);
-		state->b2b.h[6] ^= le64(*(const uint_least64_t *)&params->pepper[0]);
-		state->b2b.h[7] ^= le64(*(const uint_least64_t *)&params->pepper[8]);
-#if defined(__clang__)
-# pragma clang diagnostic pop
-#endif
+		state->b2b.h[4] ^= le64(UNALIGNED_U64(params->salt, 0));
+		state->b2b.h[5] ^= le64(UNALIGNED_U64(params->salt, 1));
+		state->b2b.h[6] ^= le64(UNALIGNED_U64(params->pepper, 0));
+		state->b2b.h[7] ^= le64(UNALIGNED_U64(params->pepper, 1));
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# endif
 	} else {
+#endif
 		state->b2b.h[0] ^= ((uint_least64_t)params->digest_len & 255) << 0;
 		state->b2b.h[0] ^= ((uint_least64_t)params->key_len & 255) << 8;
 		state->b2b.h[0] ^= ((uint_least64_t)params->fanout & 255) << 16;
@@ -95,5 +109,7 @@ libblake_internal_blake2xb_init0(struct libblake_blake2xb_state *state, const st
 		state->b2b.h[7] ^= ((uint_least64_t)params->pepper[D] & 255) << 40;
 		state->b2b.h[7] ^= ((uint_least64_t)params->pepper[E] & 255) << 48;
 		state->b2b.h[7] ^= ((uint_least64_t)params->pepper[F] & 255) << 56;
+#if UINT_LEAST64_MAX == UINT64_MAX
 	}
+#endif
 }
