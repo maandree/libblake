@@ -59,6 +59,7 @@ libblake_internal_blake2xb_init0(struct libblake_blake2xb_state *state, const st
 		state->b2b.h[1] ^= le64(ALIGNED_U64(params, 1));
 		state->b2b.h[2] ^= le64(((uint_least64_t)params->node_depth << 0) |
 		                        ((uint_least64_t)params->inner_len << 8));
+		/* unlike BLAKE2b, BLAKE2Xb does not align .salt and .pepper to 64-bits, but 32-bits */
 		state->b2b.h[4] ^= le64(UNALIGNED_U64(params->salt, 0));
 		state->b2b.h[5] ^= le64(UNALIGNED_U64(params->salt, 1));
 		state->b2b.h[6] ^= le64(UNALIGNED_U64(params->pepper, 0));

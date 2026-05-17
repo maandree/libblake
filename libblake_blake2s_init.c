@@ -38,8 +38,8 @@ libblake_blake2s_init(struct libblake_blake2s_state *state, const struct libblak
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wcast-align"
 #endif
-		state->h[0] ^= le32(((const uint_least32_t *)params)[0]);
-		state->h[1] ^= le32(((const uint_least32_t *)params)[1]);
+		state->h[0] ^= le32(((const uint_least32_t *)(const unsigned char *)params)[0]);
+		state->h[1] ^= le32(((const uint_least32_t *)(const unsigned char *)params)[1]);
 		state->h[2] ^= le32((uint_least32_t)(params->node_offset >> 0));
 		state->h[3] ^= le32(((uint_least32_t)(params->node_offset >> 32) & UINT_LEAST32_C(0xFFFF)) |
 		                    ((uint_least32_t)params->node_depth << 16) |
