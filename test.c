@@ -667,7 +667,8 @@ hash_blake2xs(unsigned char **msg, size_t msglen, size_t *msgsize,
 	params.depth = 1;
 	params.xof_len = (uint_least16_t)hashlen;
 
-	memset(*out, 0xCC, *outsize);
+	if (*outsize)
+		memset(*out, 0xCC, *outsize);
 	libblake_blake2xs_init(&state, &params);
 
 	*outlen = hashlen;
@@ -732,7 +733,8 @@ hash_blake2xb(unsigned char **msg, size_t msglen, size_t *msgsize,
 	params.depth = 1;
 	params.xof_len = (uint_least32_t)hashlen;
 
-	memset(*out, 0xCC, *outsize);
+	if (*outsize)
+		memset(*out, 0xCC, *outsize);
 	libblake_blake2xb_init(&state, &params);
 
 	*outlen = hashlen;
