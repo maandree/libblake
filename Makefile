@@ -21,66 +21,30 @@ OBJ_COMMON =\
 	libblake_decode_hex.o\
 	libblake_init.o
 
-OBJ_BLAKE =\
-	libblake_blake224_digest.o\
-	libblake_blake224_digest_get_required_input_size.o\
-	libblake_blake224_init.o\
-	libblake_blake224_init2.o\
-	libblake_blake224_update.o\
-	libblake_blake256_digest.o\
-	libblake_blake256_digest_get_required_input_size.o\
-	libblake_blake256_init.o\
-	libblake_blake256_init2.o\
-	libblake_blake256_update.o\
-	libblake_blake384_digest.o\
-	libblake_blake384_digest_get_required_input_size.o\
-	libblake_blake384_init.o\
-	libblake_blake384_init2.o\
-	libblake_blake384_update.o\
-	libblake_blake512_digest.o\
-	libblake_blake512_digest_get_required_input_size.o\
-	libblake_blake512_init.o\
-	libblake_blake512_init2.o\
-	libblake_blake512_update.o\
-	libblake_internal_blakeb_digest.o\
-	libblake_internal_blakes_digest.o\
-	libblake_internal_blakeb_update.o\
-	libblake_internal_blakes_update.o
-
-OBJ_BLAKE2 =\
-	libblake_blake2b_digest.o\
-	libblake_blake2s_digest.o\
-	libblake_blake2b_digest_get_required_input_size.o\
-	libblake_blake2s_digest_get_required_input_size.o\
-	libblake_blake2b_force_update.o\
-	libblake_blake2s_force_update.o\
-	libblake_blake2b_init.o\
-	libblake_blake2s_init.o\
-	libblake_blake2b_update.o\
-	libblake_blake2s_update.o\
-	libblake_blake2xb_digest.o\
-	libblake_blake2xs_digest.o\
-	libblake_blake2xb_force_update.o\
-	libblake_blake2xs_force_update.o\
-	libblake_blake2xb_init.o\
-	libblake_blake2xs_init.o\
-	libblake_blake2xb_predigest.o\
-	libblake_blake2xs_predigest.o\
-	libblake_blake2xb_predigest_get_required_input_size.o\
-	libblake_blake2xs_predigest_get_required_input_size.o\
-	libblake_blake2xb_update.o\
-	libblake_blake2xs_update.o\
-	libblake_internal_blake2b_compress.o\
-	libblake_internal_blake2s_compress.o\
-	libblake_internal_blake2b_output_digest.o\
-	libblake_internal_blake2s_output_digest.o\
-	libblake_internal_blake2xb_init0.o\
-	libblake_internal_blake2xs_init0.o
+CPPFLAGS_SUPPORT =\
+	$(CPPFLAGS_BLAKE224)\
+	$(CPPFLAGS_BLAKE256)\
+	$(CPPFLAGS_BLAKE384)\
+	$(CPPFLAGS_BLAKE512)\
+	$(CPPFLAGS_BLAKE2S)\
+	$(CPPFLAGS_BLAKE2B)\
+	$(CPPFLAGS_BLAKE2XS)\
+	$(CPPFLAGS_BLAKE2XB)
 
 OBJ =\
 	$(OBJ_COMMON)\
-	$(OBJ_BLAKE)\
-	$(OBJ_BLAKE2)
+	$(OBJ_BLAKE224)\
+	$(OBJ_BLAKE256)\
+	$(OBJ_BLAKES)\
+	$(OBJ_BLAKE384)\
+	$(OBJ_BLAKE512)\
+	$(OBJ_BLAKEB)\
+	$(OBJ_BLAKE2S)\
+	$(OBJ_BLAKE2XS)\
+	$(OBJ_BLAKE2S_2XS)\
+	$(OBJ_BLAKE2B)\
+	$(OBJ_BLAKE2XB)\
+	$(OBJ_BLAKE2B_2XB)
 
 HDR =\
 	libblake.h\
@@ -101,28 +65,49 @@ KAT_FILES =\
 LOBJ = $(OBJ:.o=.lo)
 
 
+include mk/support-blake224=$(SUPPORT_BLAKE224).mk
+include mk/support-blake256=$(SUPPORT_BLAKE256).mk
+include mk/support-blake384=$(SUPPORT_BLAKE384).mk
+include mk/support-blake512=$(SUPPORT_BLAKE512).mk
+include mk/support-blake2s=$(SUPPORT_BLAKE2S).mk
+include mk/support-blake2b=$(SUPPORT_BLAKE2B).mk
+include mk/support-blake2xs=$(SUPPORT_BLAKE2XS).mk
+include mk/support-blake2xb=$(SUPPORT_BLAKE2XB).mk
+
+
 all: libblake.a libblake.$(LIBEXT) test
+	@printf '\n' 2>&1
+	@printf '%s support: %s\n' 2>&1 \
+		BLAKE224 $(SUPPORT_BLAKE224)\
+		BLAKE245 $(SUPPORT_BLAKE256)\
+		BLAKE384 $(SUPPORT_BLAKE384)\
+		BLAKE512 $(SUPPORT_BLAKE512)\
+		BLAKE2S $(SUPPORT_BLAKE2S)\
+		BLAKE2B $(SUPPORT_BLAKE2B)\
+		BLAKE2XS $(SUPPORT_BLAKE2XS)\
+		BLAKE2XB $(SUPPORT_BLAKE2XB)
+
 $(OBJ): $(HDR)
 $(LOBJ): $(HDR)
 test.o: $(HDR)
 
 .c.o:
-	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) $(CPPFLAGS_SUPPORT)
 
 .c.lo:
-	$(CC) -fPIC -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
+	$(CC) -fPIC -c -o $@ $< $(CFLAGS) $(CPPFLAGS) $(CPPFLAGS_SUPPORT)
 
 libblake_internal_blake2b_compress_mm128.o: libblake_internal_blake2b_compress_mm128.c $(HDR)
-	$(CC) -c -o $@ $(@:.o=.c) $(CFLAGS) $(CPPFLAGS) $(CFLAGS_MM128)
+	$(CC) -c -o $@ $(@:.o=.c) $(CFLAGS) $(CPPFLAGS) $(CPPFLAGS_SUPPORT) $(CFLAGS_MM128)
 
 libblake_internal_blake2b_compress_mm128.lo: libblake_internal_blake2b_compress_mm128.c $(HDR)
-	$(CC) -c -o $@ $(@:.lo=.c) $(CFLAGS) $(CPPFLAGS) $(CFLAGS_MM128)
+	$(CC) -c -o $@ $(@:.lo=.c) $(CFLAGS) $(CPPFLAGS) $(CPPFLAGS_SUPPORT) $(CFLAGS_MM128)
 
 libblake_internal_blake2b_compress_mm256.o: libblake_internal_blake2b_compress_mm256.c $(HDR)
-	$(CC) -c -o $@ $(@:.o=.c) $(CFLAGS) $(CPPFLAGS) $(CFLAGS_MM256)
+	$(CC) -c -o $@ $(@:.o=.c) $(CFLAGS) $(CPPFLAGS) $(CPPFLAGS_SUPPORT) $(CFLAGS_MM256)
 
 libblake_internal_blake2b_compress_mm256.lo: libblake_internal_blake2b_compress_mm256.c $(HDR)
-	$(CC) -c -o $@ $(@:.lo=.c) $(CFLAGS) $(CPPFLAGS) $(CFLAGS_MM256)
+	$(CC) -c -o $@ $(@:.lo=.c) $(CFLAGS) $(CPPFLAGS) $(CPPFLAGS_SUPPORT) $(CFLAGS_MM256)
 
 test: test.o libblake.a
 	$(CC) -o $@ test.o libblake.a $(LDFLAGS)

@@ -34,6 +34,7 @@ check_hex(int uppercase, const char *hex, const unsigned char *bin, size_t n)
 		ERROR("libblake_decode_hex failed\n"); /* $covered$ */
 }
 
+#if defined(SUPPORT_BLAKE224) || defined(SUPPORT_BLAKE256) || defined(SUPPORT_BLAKE384) || defined(SUPPORT_BLAKE512)
 static const char *
 digest_blake1(int length, const void *msg, size_t msglen, size_t bits)
 {
@@ -54,19 +55,35 @@ digest_blake1(int length, const void *msg, size_t msglen, size_t bits)
 		free(data);\
 	} while (0)
 
-	if (length == 224)
+#ifdef SUPPORT_BLAKE224
+	if (length == 224) {
 		DIGEST(224);
-	else if (length == 256)
+		goto out;
+	}
+#endif
+#ifdef SUPPORT_BLAKE256
+	if (length == 256) {
 		DIGEST(256);
-	else if (length == 384)
+		goto out;
+	}
+#endif
+#ifdef SUPPORT_BLAKE384
+	if (length == 384) {
 		DIGEST(384);
-	else if (length == 512)
+		goto out;
+	}
+#endif
+#ifdef SUPPORT_BLAKE512
+	if (length == 512) {
 		DIGEST(512);
-	else
-		abort(); /* $covered$ */
+		goto out;
+	}
+#endif
+	abort(); /* $covered$ */
 
 #undef DIGEST
 
+out:
 	return hex;
 }
 
@@ -121,9 +138,16 @@ check_blake1(void)
 	int failed = 0;
 	size_t bits;
 
+#ifdef SUPPORT_BLAKE224
 	CHECK_BLAKE224_STR("", "7dc5313b1c04512a174bd6503b89607aecbee0903d40a8a569c94eed");
+#endif
+#ifdef SUPPORT_BLAKE256
 	CHECK_BLAKE256_STR("", "716f6e863f744b9ac22c97ec7b76ea5f5908bc5b2f67c61510bfc4751384ea7a");
+#endif
+#ifdef SUPPORT_BLAKE384
 	CHECK_BLAKE384_STR("", "c6cbd89c926ab525c242e6621f2f5fa73aa4afe3d9e24aed727faaadd6af38b620bdb623dd2b4788b1c8086984af8706");
+#endif
+#ifdef SUPPORT_BLAKE512
 	CHECK_BLAKE512_STR("", "a8cfbbd73726062df0c6864dda65defe58ef0cc52a5625090fa17601e1eecd1b628e94f396ae402a00acc9eab77b4d4c2e852aaaa25a636d80af3fc7913ef5b8");
 
 	CHECK_BLAKE512_STR("The quick brown fox jumps over the lazy dog",
@@ -131,7 +155,9 @@ check_blake1(void)
 
 	CHECK_BLAKE512_STR("The quick brown fox jumps over the lazy dof",
 	                   "a701c2a1f9baabd8b1db6b75aee096900276f0b86dc15d247ecc03937b370324a16a4ffc0c3a85cd63229cfa15c15f4ba6d46ae2e849ed6335e9ff43b764198a");
+#endif
 
+#ifdef SUPPORT_BLAKE224
 	bits = 1;
 #define X(INPUT, EXPECT) CHECK_BLAKE224_BITS(INPUT, bits++, EXPECT)
 	X("00", "615b9bd1077a8270d4f647799ffaaf87c03d72efd37e4947fcf01cca");
@@ -184,7 +210,9 @@ check_blake1(void)
 	X("C6F50BB74E29", "6d6d952053aead200de9daa856c2993a7a7fa4a15b3924fb77dbb384");
 	X("79F1B4CCC62A00", "ad93ea3f245493cf2b660d6f5fe82b8bfb0d3394854e88c2704c98c2");
 #undef X
+#endif
 
+#ifdef SUPPORT_BLAKE256
 	bits = 1;
 #define X(INPUT, EXPECT) CHECK_BLAKE256_BITS(INPUT, bits++, EXPECT)
 	X("00", "81a10984912cd57c12e923b46142b2b434dfe1a0ef29c03de05555f9f2fee9b4");
@@ -237,7 +265,9 @@ check_blake1(void)
 	X("C6F50BB74E29", "637923bd29a35aa3ecbbd2a50549fc32c14cf0fdcaf41c3194dd7414fd224815");
 	X("79F1B4CCC62A00", "106cd7e18e3bd16353cf561411d87b609536856d57180155b60d7bc0a73b9d45");
 #undef X
+#endif
 
+#ifdef SUPPORT_BLAKE384
 	bits = 1;
 #define X(INPUT, EXPECT) CHECK_BLAKE384_BITS(INPUT, bits++, EXPECT)
 	X("00", "1ffde9711b419d7c97dc142e7704d2ae61163f8a818c47938b978d6113949d8e7819b9699d497a3b289b8bb4415ffae7");
@@ -290,7 +320,9 @@ check_blake1(void)
 	X("C6F50BB74E29", "5ddb50068ca430bffae7e5a8bbcb2c59171743cce027c0ea937fa2b511848192af2aca98ead30b0850b4d2d1542decdb");
 	X("79F1B4CCC62A00", "7c80a8320015dfc5143d1c6d60a4b51c6943208005aa5176300ecdfa728d5bb53c9817b33c934eca94332716458572dc");
 #undef X
+#endif
 
+#ifdef SUPPORT_BLAKE512
 	bits = 1;
 #define X(INPUT, EXPECT) CHECK_BLAKE512_BITS(INPUT, bits++, EXPECT)
 	X("00", "f0a9b5b755802205fd1a1f56e7a03d7573d46e8ba5037517281560fbe6db03c174b00597fb4e1427747c7382fe63c6692f05a5e0841e99883cb7c272c2a62191");
@@ -343,9 +375,11 @@ check_blake1(void)
 	X("C6F50BB74E29", "b6e8a7380df1f007d7c271e7255bbca7714f25029ac1fd6fe92ef74cbcd9e99c112f8ae1a45ccb566ce19d9678a122c612beff5f8eeeee3f3f402fd2781182d4");
 	X("79F1B4CCC62A00", "1cc9fe09100fbc45f20382353785aa753fbd19ea0ab655c0d8338e0d07154ccaa5659698a6627302c25dd54cdfde00c0ef06905abc55030563399ca8efae2c22");
 #undef X
+#endif
 
 	return failed;
 }
+#endif
 
 static char *
 read_file(const char *path)
@@ -532,6 +566,7 @@ check_kat_file(const char *path, const char *algname, void (*hash_function)(unsi
 	return failed;
 }
 
+#ifdef SUPPORT_BLAKE2S
 static void
 hash_blake2s(unsigned char **msg, size_t msglen, size_t *msgsize,
              unsigned char **key, size_t keylen, size_t *keysize,
@@ -588,7 +623,9 @@ hash_blake2s(unsigned char **msg, size_t msglen, size_t *msgsize,
 		libblake_blake2s_digest(&state, *msg, msglen, 0, *outlen, *out);
 	}
 }
+#endif
 
+#ifdef SUPPORT_BLAKE2B
 static void
 hash_blake2b(unsigned char **msg, size_t msglen, size_t *msgsize,
              unsigned char **key, size_t keylen, size_t *keysize,
@@ -645,7 +682,9 @@ hash_blake2b(unsigned char **msg, size_t msglen, size_t *msgsize,
 		libblake_blake2b_digest(&state, *msg, msglen, 0, *outlen, *out);
 	}
 }
+#endif
 
+#ifdef SUPPORT_BLAKE2XS
 static void
 hash_blake2xs(unsigned char **msg, size_t msglen, size_t *msgsize,
               unsigned char **key, size_t keylen, size_t *keysize,
@@ -711,7 +750,9 @@ hash_blake2xs(unsigned char **msg, size_t msglen, size_t *msgsize,
 	if (rem)
 		libblake_blake2xs_digest(&state, i, (uint_least8_t)rem, &(*out)[off]);
 }
+#endif
 
+#ifdef SUPPORT_BLAKE2XB
 static void
 hash_blake2xb(unsigned char **msg, size_t msglen, size_t *msgsize,
               unsigned char **key, size_t keylen, size_t *keysize,
@@ -777,6 +818,7 @@ hash_blake2xb(unsigned char **msg, size_t msglen, size_t *msgsize,
 	if (rem)
 		libblake_blake2xb_digest(&state, i, (uint_least8_t)rem, &(*out)[off]);
 }
+#endif
 
 int
 main(void)
@@ -790,13 +832,23 @@ main(void)
 	CHECK_HEX(1, 00, 12, 32, 00, 45, 67, 82, 9A, B0, CD, FE, FF, 80, 08, CC, 28);
 	CHECK_HEX(0, 00, 12, 32, 00, 45, 67, 82, 9a, b0, cd, fe, ff, 80, 08, cc, 28);
 
+#if defined(SUPPORT_BLAKE224) || defined(SUPPORT_BLAKE256) || defined(SUPPORT_BLAKE384) || defined(SUPPORT_BLAKE512)
 	failed |= check_blake1();
+#endif
 	/* TODO need tests for BLAKE1 with salt and suffix */
+#ifdef SUPPORT_BLAKE2S
 	failed |= check_kat_file("kat/blake2s", "BLAKE2s", &hash_blake2s);
+#endif
+#ifdef SUPPORT_BLAKE2B
 	failed |= check_kat_file("kat/blake2b", "BLAKE2b", &hash_blake2b);
+#endif
 	/* TODO need tests for BLAKE2[sb] with salt and pepper */
+#ifdef SUPPORT_BLAKE2XS
 	failed |= check_kat_file("kat/blake2xs", "BLAKE2Xs", &hash_blake2xs);
+#endif
+#ifdef SUPPORT_BLAKE2XB
 	failed |= check_kat_file("kat/blake2xb", "BLAKE2Xb", &hash_blake2xb);
+#endif
 
 	/* TODO test libblake_blake224_update */
 	/* TODO test libblake_blake256_update */
